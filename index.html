@@ -1461,7 +1461,12 @@
         
         function submitMultiAnswer() {
             const q = currentQuestions[currentIndex];
-            if (answers[q.id] || multiSubmitted) return;
+            if (answers[q.id]) return;
+            
+            if (multiSelectedOptions.size === 0) {
+                alert('请先选择答案');
+                return;
+            }
             
             const selected = Array.from(multiSelectedOptions).sort().join('');
             const correct = q.answer.split('').sort().join('');
@@ -6024,7 +6029,8 @@
             const optionsContainer = document.getElementById('q-options');
             optionsContainer.innerHTML = '';
             
-            ['A', 'B', 'C', 'D'].forEach(key => {
+            const optKeys = q.type === 'multi' ? ['A', 'B', 'C', 'D', 'E'] : ['A', 'B', 'C', 'D'];
+            optKeys.forEach(key => {
                 if (q.options[key]) {
                     const option = document.createElement('div');
                     option.className = 'option';
@@ -6032,24 +6038,37 @@
                     option.innerHTML = `<span class="option-label">${key}.</span>${q.options[key]}`;
                     
                     if (answers[q.id]) {
-                        if (answers[q.id].correct) {
-                            // If answered correctly, show correct state
-                            option.classList.add('disabled');
-                            if (key === answers[q.id].selected) {
-                                option.classList.add('correct');
-                            }
-                        } else {
-                            // If answered wrong, allow retry
-                            if (key === answers[q.id].selected) {
-                                option.classList.add('wrong');
-                            }
-                            if (key === q.answer) {
+                        option.classList.add('disabled');
+                        if (q.type === 'multi') {
+                            // Multi-choice: highlight based on correctness
+                            const selectedArr = answers[q.id].selected.split('');
+                            const correctArr = q.answer.split('');
+                            if (selectedArr.includes(key) && correctArr.includes(key)) {
+                                option.classList.add('multi-correct');
+                            } else if (selectedArr.includes(key) && !correctArr.includes(key)) {
+                                option.classList.add('multi-wrong');
+                            } else if (!selectedArr.includes(key) && correctArr.includes(key)) {
                                 option.classList.add('show-correct');
                             }
-                            // Allow clicking to retry
-                            option.addEventListener('click', () => retrySelectOption(key));
+                        } else {
+                            if (answers[q.id].correct) {
+                                if (key === answers[q.id].selected) {
+                                    option.classList.add('correct');
+                                }
+                            } else {
+                                if (key === answers[q.id].selected) {
+                                    option.classList.add('wrong');
+                                }
+                                if (key === q.answer) {
+                                    option.classList.add('show-correct');
+                                }
+                                option.addEventListener('click', () => retrySelectOption(key));
+                            }
                         }
                     } else {
+                        if (q.type === 'multi' && multiSelectedOptions.has(key)) {
+                            option.classList.add('multi-selected');
+                        }
                         option.addEventListener('click', () => selectOption(key));
                     }
                     optionsContainer.appendChild(option);
@@ -6067,7 +6086,11 @@
                     retryBtn.classList.add('hidden');
                 } else {
                     feedback.className = 'feedback wrong';
-                    feedback.innerHTML = `<strong>✗ 回答错误！</strong> 正确答案是 <strong>${q.answer}</strong><br>点击其他选项或点击下方按钮重新选择`;
+                    if (q.type === 'multi') {
+                        feedback.innerHTML = `<strong>✗ 回答错误！</strong><br>你选的答案：${answers[q.id].selected}<br>正确答案：${q.answer}<br>请点击"重新选择"按钮重试`;
+                    } else {
+                        feedback.innerHTML = `<strong>✗ 回答错误！</strong> 正确答案是 <strong>${q.answer}</strong><br>点击其他选项或点击下方按钮重新选择`;
+                    }
                     retryBtn.classList.remove('hidden');
                 }
                 if (showExplanation && q.explanation) {
@@ -6143,6 +6166,8 @@
             if (wasWrong) wrongCount--;
             
             delete answers[q.id];
+            multiSelectedOptions.clear();
+            multiSubmitted = false;
             showQuestion();
         }
         
