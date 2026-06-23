@@ -6118,25 +6118,6 @@
                 currentIndex === currentQuestions.length - 1 ? '查看结果' : '下一题';
         }
         
-        function selectOption(key) {
-            const q = currentQuestions[currentIndex];
-            if (answers[q.id]) return;
-            
-            const isCorrect = key === q.answer;
-            answers[q.id] = { selected: key, correct: isCorrect };
-            
-            if (isCorrect) {
-                correctCount++;
-            } else {
-                wrongCount++;
-                if (!wrongQuestions.includes(q.id)) {
-                    wrongQuestions.push(q.id);
-                    localStorage.setItem('maogai_wrong', JSON.stringify(wrongQuestions));
-                }
-            }
-            showQuestion();
-        }
-        
         function retrySelectOption(key) {
             const q = currentQuestions[currentIndex];
             if (!answers[q.id] || answers[q.id].correct) return;
