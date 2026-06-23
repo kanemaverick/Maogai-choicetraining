@@ -220,6 +220,82 @@
             margin-bottom: 15px;
         }
 
+    
+        .data-panel {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+        }
+        .data-panel h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+        .data-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .data-btn {
+            padding: 10px 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .data-btn:hover {
+            border-color: #667eea;
+            background: #f5f5ff;
+        }
+        .data-btn.export { border-color: #4CAF50; color: #4CAF50; }
+        .data-btn.export:hover { background: #e8f5e9; }
+        .data-btn.import { border-color: #2196F3; color: #2196F3; }
+        .data-btn.import:hover { background: #e3f2fd; }
+        .data-btn.clear { border-color: #f44336; color: #f44336; }
+        .data-btn.clear:hover { background: #ffebee; }
+        .data-btn.share { border-color: #ff9800; color: #ff9800; }
+        .data-btn.share:hover { background: #fff3e0; }
+        #file-input { display: none; }
+        .share-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        .share-modal.active { display: flex; }
+        .share-content {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+        .share-content h3 { margin-bottom: 15px; color: #333; }
+        .share-link {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            word-break: break-all;
+        }
+        .share-buttons { display: flex; gap: 10px; justify-content: center; }
+
     </style>
 </head>
 <body>
@@ -228,6 +304,7 @@
             <h1>毛概选择题练习</h1>
             <p>共180道单选题，答错可重新选择</p>
         </div>
+        
         
         <div id="start-screen" class="card">
             <h2 style="margin-bottom: 20px; color: #333;">选择练习模式</h2>
@@ -245,6 +322,20 @@
                 </label>
             </div>
             <button class="btn btn-primary" onclick="startQuiz()" style="width: 100%; padding: 15px;">开始练习</button>
+            
+            <div class="data-panel">
+                <h3>📊 数据管理</h3>
+                <div class="data-buttons">
+                    <button class="data-btn export" onclick="exportData()">📤 导出数据</button>
+                    <button class="data-btn import" onclick="document.getElementById('file-input').click()">📥 导入数据</button>
+                    <button class="data-btn share" onclick="showShareModal()">🔗 分享收藏</button>
+                    <button class="data-btn clear" onclick="clearAllData()">🗑️ 清空数据</button>
+                </div>
+                <input type="file" id="file-input" accept=".json" onchange="importData(event)">
+                <p style="margin-top: 10px; font-size: 0.85rem; color: #666;">
+                    提示：导出数据可备份您的答题记录、错题和收藏，换设备时可导入恢复。
+                </p>
+            </div>
         </div>
         
         <div id="quiz-screen" class="hidden">
@@ -453,6 +544,132 @@
                     </div>
                 `;
             }).join('');
+        }
+
+        
+        // Export all data to JSON file
+        function exportData() {
+            loadBookmarks();
+            const savedWrong = localStorage.getItem('maogai_wrong');
+            
+            const data = {
+                version: '1.0',
+                exportDate: new Date().toISOString(),
+                bookmarks: bookmarkedQuestions,
+                wrongQuestions: savedWrong ? JSON.parse(savedWrong) : [],
+                answers: {} // Could store answers if needed
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `毛概题库_${new Date().toLocaleDateString()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        // Import data from JSON file
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if (data.bookmarks) {
+                        bookmarkedQuestions = data.bookmarks;
+                        saveBookmarks();
+                    }
+                    
+                    if (data.wrongQuestions) {
+                        localStorage.setItem('maogai_wrong', JSON.stringify(data.wrongQuestions));
+                    }
+                    
+                    alert('数据导入成功！\n\n导入内容：\n- 收藏题目：' + (data.bookmarks ? data.bookmarks.length : 0) + ' 道\n- 错题记录：' + (data.wrongQuestions ? data.wrongQuestions.length : 0) + ' 道');
+                } catch (err) {
+                    alert('导入失败：文件格式不正确');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = ''; // Reset file input
+        }
+        
+        // Clear all data
+        function clearAllData() {
+            if (confirm('确定要清空所有数据吗？\n\n包括：\n- 答题记录\n- 错题记录\n- 收藏题目\n\n此操作不可恢复！')) {
+                localStorage.removeItem('maogai_bookmarks');
+                localStorage.removeItem('maogai_wrong');
+                bookmarkedQuestions = [];
+                alert('数据已清空');
+            }
+        }
+        
+        // Show share modal
+        function showShareModal() {
+            loadBookmarks();
+            if (bookmarkedQuestions.length === 0) {
+                alert('你还没有收藏任何题目');
+                return;
+            }
+            
+            // Create share data
+            const shareData = {
+                type: 'maogai_bookmarks',
+                ids: bookmarkedQuestions
+            };
+            
+            // Encode to base64
+            const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(shareData))));
+            
+            // Create share link
+            const baseUrl = window.location.href.split('?')[0];
+            const shareUrl = baseUrl + '?bookmarks=' + encoded;
+            
+            document.getElementById('share-link').value = shareUrl;
+            document.getElementById('share-modal').classList.add('active');
+        }
+        
+        // Close share modal
+        function closeShareModal() {
+            document.getElementById('share-modal').classList.remove('active');
+        }
+        
+        // Copy share link
+        function copyShareLink() {
+            const linkInput = document.getElementById('share-link');
+            linkInput.select();
+            document.execCommand('copy');
+            alert('链接已复制到剪贴板！');
+        }
+        
+        // Load bookmarks from URL if present
+        function loadBookmarksFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const bookmarksParam = urlParams.get('bookmarks');
+            
+            if (bookmarksParam) {
+                try {
+                    const decoded = JSON.parse(decodeURIComponent(escape(atob(bookmarksParam))));
+                    if (decoded.type === 'maogai_bookmarks' && decoded.ids) {
+                        if (confirm(`检测到分享的收藏题目（${decoded.ids.length} 道）\n\n是否导入？\n\n注意：这会合并到你现有的收藏中`)) {
+                            loadBookmarks();
+                            // Merge bookmarks
+                            const newBookmarks = [...new Set([...bookmarkedQuestions, ...decoded.ids])];
+                            bookmarkedQuestions = newBookmarks;
+                            saveBookmarks();
+                            alert(`成功导入！当前共收藏 ${bookmarkedQuestions.length} 道题目`);
+                        }
+                    }
+                } catch (err) {
+                    console.log('Invalid bookmarks parameter');
+                }
+                
+                // Clean URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
         }
 
         const questionsData = [
@@ -2800,6 +3017,7 @@
         
         document.addEventListener('DOMContentLoaded', function() {
             loadBookmarks();
+            loadBookmarksFromUrl();
             questions = questionsData;
             document.querySelectorAll('.mode-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
@@ -3043,5 +3261,19 @@
             return array;
         }
     </script>
+
+    <div class="share-modal" id="share-modal">
+        <div class="share-content">
+            <h3>🔗 分享收藏题目</h3>
+            <p style="margin-bottom: 15px; color: #666; font-size: 0.9rem;">
+                复制下方链接，分享给同学即可导入你的收藏题目
+            </p>
+            <textarea class="share-link" id="share-link" readonly rows="3"></textarea>
+            <div class="share-buttons">
+                <button class="btn btn-primary" onclick="copyShareLink()">📋 复制链接</button>
+                <button class="btn btn-secondary" onclick="closeShareModal()">关闭</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
