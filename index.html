@@ -1,0 +1,3047 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>毛概选择题练习</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header { text-align: center; color: white; margin-bottom: 30px; }
+        .header h1 { font-size: 2.5rem; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .header p { font-size: 1.1rem; opacity: 0.9; }
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+        .progress-bar { width: 100%; height: 12px; background: #e0e0e0; border-radius: 6px; overflow: hidden; margin-bottom: 20px; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #4CAF50, #45a049); transition: width 0.3s ease; border-radius: 6px; }
+        .stats { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 0.95rem; color: #666; }
+        .stat-item { display: flex; align-items: center; gap: 5px; }
+        .stat-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .stat-dot.correct { background: #4CAF50; }
+        .stat-dot.wrong { background: #f44336; }
+        .stat-dot.current { background: #2196F3; }
+        .question-number { font-size: 1.2rem; color: #667eea; font-weight: bold; margin-bottom: 15px; }
+        .question-text { font-size: 1.15rem; line-height: 1.8; color: #333; margin-bottom: 25px; }
+        .options { display: flex; flex-direction: column; gap: 12px; }
+        .option {
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        .option:hover { border-color: #667eea; background: #f5f5ff; transform: translateX(5px); }
+        .option.selected { border-color: #667eea; background: #667eea; color: white; }
+        .option.correct { border-color: #4CAF50; background: #4CAF50; color: white; }
+        .option.wrong { border-color: #f44336; background: #f44336; color: white; }
+        .option.disabled { pointer-events: none; opacity: 0.7; }
+        .option.show-correct { border-color: #4CAF50; background: #e8f5e9; color: #2e7d32; font-weight: bold; }
+        .option-label { font-weight: bold; margin-right: 10px; }
+        .feedback { margin-top: 20px; padding: 20px; border-radius: 10px; font-size: 1rem; display: none; }
+        .feedback.correct { background: #e8f5e9; color: #2e7d32; border: 1px solid #4CAF50; display: block; }
+        .feedback.wrong { background: #ffebee; color: #c62828; border: 1px solid #f44336; display: block; }
+        .explanation { margin-top: 15px; padding: 15px; background: #f5f5ff; border-radius: 10px; border-left: 4px solid #667eea; font-size: 0.95rem; line-height: 1.8; color: #333; }
+        .explanation-title { font-weight: bold; color: #667eea; margin-bottom: 10px; }
+        .retry-btn {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+        .retry-btn:hover { background: #f57c00; transform: translateY(-2px); }
+        .buttons { display: flex; justify-content: space-between; margin-top: 25px; gap: 15px; }
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-secondary { background: #f5f5f5; color: #333; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .mode-selector { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .mode-btn {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            border-radius: 25px;
+            background: white;
+            color: #667eea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        .mode-btn:hover, .mode-btn.active { background: #667eea; color: white; }
+        .result-card { text-align: center; padding: 40px; }
+        .result-card h2 { font-size: 2rem; margin-bottom: 20px; color: #333; }
+        .score { font-size: 4rem; font-weight: bold; color: #667eea; margin: 20px 0; }
+        .score-detail { font-size: 1.1rem; color: #666; margin-bottom: 30px; }
+        .review-list { text-align: left; max-height: 400px; overflow-y: auto; margin-top: 20px; }
+        .review-item { padding: 15px; border-bottom: 1px solid #eee; }
+        .review-item.correct { border-left: 4px solid #4CAF50; }
+        .review-item.wrong { border-left: 4px solid #f44336; }
+        .review-question { font-weight: 600; margin-bottom: 5px; }
+        .review-answer { font-size: 0.9rem; color: #666; }
+        .hidden { display: none; }
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.8rem; }
+            .card { padding: 20px; }
+            .option { padding: 12px 15px; }
+            .buttons { flex-direction: column; }
+            .btn { width: 100%; }
+        }
+    
+        .bookmark-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #ccc;
+            padding: 5px;
+        }
+        .bookmark-btn:hover { transform: scale(1.2); }
+        .bookmark-btn.active { color: #ff9800; }
+        .question-header { position: relative; }
+
+        
+
+        .browse-mode { padding: 20px 0; }
+        .browse-item {
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        .browse-item:hover { border-color: #667eea; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .browse-item.bookmarked { border-left: 4px solid #ff9800; }
+        .browse-header { 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .browse-q-num { font-weight: bold; color: #667eea; font-size: 1.1rem; }
+        .browse-bookmark-btn {
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            color: #ccc;
+            padding: 2px 5px;
+        }
+        .browse-bookmark-btn.active { color: #ff9800; }
+        .browse-q-text { font-size: 1rem; color: #333; margin-bottom: 12px; line-height: 1.6; }
+        .browse-options { margin-bottom: 12px; }
+        .browse-opt {
+            padding: 8px 12px;
+            margin-bottom: 6px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            display: block;
+        }
+        .browse-opt.correct { 
+            background: #e8f5e9; 
+            color: #2e7d32; 
+            font-weight: bold;
+            border-left: 3px solid #4CAF50;
+        }
+        .browse-answer-box {
+            background: #f0f4ff;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .browse-answer-label { 
+            font-weight: bold; 
+            color: #667eea; 
+            margin-bottom: 5px;
+        }
+        .browse-explanation {
+            font-size: 0.9rem;
+            color: #555;
+            line-height: 1.6;
+        }
+        .browse-filter { 
+            display: flex; 
+            gap: 10px; 
+            margin-bottom: 20px; 
+            flex-wrap: wrap;
+            position: sticky;
+            top: 0;
+            background: white;
+            padding: 15px 0;
+            z-index: 10;
+            border-bottom: 1px solid #eee;
+        }
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+        .filter-btn:hover, .filter-btn.active { 
+            background: #667eea; 
+            color: white; 
+            border-color: #667eea; 
+        }
+        .browse-stats {
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>毛概选择题练习</h1>
+            <p>共180道单选题，答错可重新选择</p>
+        </div>
+        
+        <div id="start-screen" class="card">
+            <h2 style="margin-bottom: 20px; color: #333;">选择练习模式</h2>
+            <div class="mode-selector">
+                <button class="mode-btn active" data-mode="all">全部题目</button>
+                <button class="mode-btn" data-mode="random">随机20题</button>
+                <button class="mode-btn" data-mode="wrong">错题重练</button>
+                <button class="mode-btn" data-mode="bookmarked">收藏题目</button>
+                <button class="mode-btn" data-mode="browse">快速浏览</button>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" id="show-answer" checked style="width: 20px; height: 20px;">
+                    <span>答后显示详细解析</span>
+                </label>
+            </div>
+            <button class="btn btn-primary" onclick="startQuiz()" style="width: 100%; padding: 15px;">开始练习</button>
+        </div>
+        
+        <div id="quiz-screen" class="hidden">
+            <div class="card">
+                <div class="progress-bar">
+                    <div id="progress" class="progress-fill" style="width: 0%"></div>
+                </div>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-dot current"></div>
+                        <span>进度: <span id="current-num">1</span>/<span id="total-num">90</span></span>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-dot correct"></div>
+                        <span>正确: <span id="correct-num">0</span></span>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-dot wrong"></div>
+                        <span>错误: <span id="wrong-num">0</span></span>
+                    </div>
+                </div>
+                <div id="question-container">
+                    
+                    <div class="question-header">
+                        <div class="question-number" id="q-number">第 1 题</div>
+                        <button class="bookmark-btn" id="bookmark-btn" onclick="toggleBookmark()">☆</button>
+                    </div>
+                    <div class="question-text" id="q-text"></div>
+                    <div class="options" id="q-options"></div>
+                    <div class="feedback" id="feedback"></div>
+                    <div class="explanation hidden" id="explanation">
+                        <div class="explanation-title">📖 详细解析：</div>
+                        <div id="explanation-text"></div>
+                    </div>
+                    <button class="retry-btn hidden" id="retry-btn" onclick="retryQuestion()">🔄 重新选择</button>
+                </div>
+                <div class="buttons">
+                    <button class="btn btn-secondary" id="prev-btn" onclick="prevQuestion()" disabled>上一题</button>
+                    <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()">下一题</button>
+                </div>
+            </div>
+        </div>
+        
+        
+        <div id="browse-screen" class="hidden">
+            <div class="card">
+                <h2 style="margin-bottom: 15px; color: #333;">快速浏览模式</h2>
+                <div class="browse-filter">
+                    <button class="filter-btn active" data-filter="all" onclick="filterBrowse('all')">全部</button>
+                    <button class="filter-btn" data-filter="bookmarked" onclick="filterBrowse('bookmarked')">仅收藏</button>
+                    <button class="filter-btn" onclick="toggleAllAnswers()">显示/隐藏全部答案</button>
+                    <button class="btn btn-secondary" onclick="restart()" style="margin-left: auto;">返回</button>
+                </div>
+                <div class="browse-stats" id="browse-stats"></div>
+                <div class="browse-mode" id="browse-container"></div>
+            </div>
+        </div>
+        <div id="result-screen" class="hidden">
+            <div class="card result-card">
+                <h2>练习完成！</h2>
+                <div class="score" id="final-score">0%</div>
+                <div class="score-detail" id="score-detail"></div>
+                <div class="buttons" style="justify-content: center;">
+                    <button class="btn btn-secondary" onclick="showReview()">查看错题</button>
+                    <button class="btn btn-primary" onclick="restart()">再练一次</button>
+                </div>
+                <div class="review-list hidden" id="review-list"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let questions = [];
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let correctCount = 0;
+        let wrongCount = 0;
+        let answers = {};
+        let wrongQuestions = [];
+        let selectedMode = 'all';
+        let showExplanation = true;
+        
+        
+        let bookmarkedQuestions = [];
+        
+        // Load bookmarked questions from localStorage
+        function loadBookmarks() {
+            const saved = localStorage.getItem('maogai_bookmarks');
+            if (saved) {
+                bookmarkedQuestions = JSON.parse(saved);
+            }
+        }
+        
+        // Save bookmarked questions to localStorage
+        function saveBookmarks() {
+            localStorage.setItem('maogai_bookmarks', JSON.stringify(bookmarkedQuestions));
+        }
+        
+        // Toggle bookmark for current question
+        function toggleBookmark() {
+            const q = currentQuestions[currentIndex];
+            const qId = q.id;
+            const bookmarkBtn = document.getElementById('bookmark-btn');
+            
+            if (bookmarkedQuestions.includes(qId)) {
+                // Remove bookmark
+                bookmarkedQuestions = bookmarkedQuestions.filter(id => id !== qId);
+                bookmarkBtn.textContent = '☆';
+                bookmarkBtn.classList.remove('active');
+            } else {
+                // Add bookmark
+                bookmarkedQuestions.push(qId);
+                bookmarkBtn.textContent = '★';
+                bookmarkBtn.classList.add('active');
+            }
+            
+            saveBookmarks();
+        }
+        
+        // Update bookmark button state
+        function updateBookmarkState() {
+            const q = currentQuestions[currentIndex];
+            const bookmarkBtn = document.getElementById('bookmark-btn');
+            
+            if (bookmarkedQuestions.includes(q.id)) {
+                bookmarkBtn.textContent = '★';
+                bookmarkBtn.classList.add('active');
+            } else {
+                bookmarkBtn.textContent = '☆';
+                bookmarkBtn.classList.remove('active');
+            }
+        }
+
+        
+        
+
+        
+        let browseFilter = 'all';
+        
+        function startBrowseMode() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('browse-screen').classList.remove('hidden');
+            
+            loadBookmarks();
+            renderBrowseItems();
+        }
+        
+        function filterBrowse(filter) {
+            browseFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === filter);
+            });
+            renderBrowseItems();
+        }
+        
+        function toggleBrowseBookmark(qId, event) {
+            event.stopPropagation();
+            loadBookmarks();
+            if (bookmarkedQuestions.includes(qId)) {
+                bookmarkedQuestions = bookmarkedQuestions.filter(id => id !== qId);
+            } else {
+                bookmarkedQuestions.push(qId);
+            }
+            saveBookmarks();
+            renderBrowseItems();
+        }
+        
+        function renderBrowseItems() {
+            const container = document.getElementById('browse-container');
+            const stats = document.getElementById('browse-stats');
+            
+            let filteredQuestions = questions;
+            if (browseFilter === 'bookmarked') {
+                filteredQuestions = questions.filter(q => bookmarkedQuestions.includes(q.id));
+            }
+            
+            stats.textContent = `共 ${filteredQuestions.length} 题`;
+            
+            container.innerHTML = filteredQuestions.map(q => {
+                const isBookmarked = bookmarkedQuestions.includes(q.id);
+                
+                const optionsHtml = ['A', 'B', 'C', 'D'].map(key => {
+                    if (q.options[key]) {
+                        const isCorrect = key === q.answer;
+                        return `<div class="browse-opt ${isCorrect ? 'correct' : ''}">${key}. ${q.options[key]}</div>`;
+                    }
+                    return '';
+                }).join('');
+                
+                return `
+                    <div class="browse-item ${isBookmarked ? 'bookmarked' : ''}">
+                        <div class="browse-header">
+                            <span class="browse-q-num">第 ${q.id} 题</span>
+                            <button class="browse-bookmark-btn ${isBookmarked ? 'active' : ''}" onclick="toggleBrowseBookmark(${q.id}, event)">
+                                ${isBookmarked ? '★ 收藏' : '☆ 收藏'}
+                            </button>
+                        </div>
+                        <div class="browse-q-text">${q.question}</div>
+                        <div class="browse-options">${optionsHtml}</div>
+                        <div class="browse-answer-box">
+                            <div class="browse-answer-label">✓ 正确答案：${q.answer}</div>
+                            ${q.explanation ? `<div class="browse-explanation">${q.explanation}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        const questionsData = [
+  {
+    "id": 1,
+    "question": "马克思主义中国化时代化的科学内涵具体包含三层意思，不包含下列哪项()",
+    "options": {
+      "A": "运用马克思主义的立场、观点和方法，观察时代、把握时代、引领时代，解决中国革命、建 设、改革中的实际问题",
+      "B": "总结和提炼中国革命、建设、改革的实践经验并将其上升为理论，不断丰富和发展马克思主 义的理论宝库，赋予马克思主义以新的时代内涵",
+      "C": "简单套用马克思主义一般原理和照搬外国经验解决中国社会主义建设和改革中的问题",
+      "D": "运用中国人民喜闻乐见的民族语言来阐述马克思主义，使其植根于中华优秀传统文化的土壤之中，具有中国特色、中国风格、中国气派"
+    },
+    "answer": "C",
+    "page": "7",
+    "explanation": "马克思主义中国化时代化的科学内涵包括三层意思：①运用马克思主义的立场、观点和方法，观察时代、把握时代、引领时代，解决中国革命、建设、改革中的实际问题；②总结和提炼中国革命、建设、改革的实践经验并将其上升为理论，不断丰富和发展马克思主义的理论宝库，赋予马克思主义以新的时代内涵；③运用中国人民喜闻乐见的民族语言来阐述马克思主义，使其植根于中华优秀传统文化的土壤之中，具有中国特色、中国风格、中国气派。选项C'简单套用马克思主义一般原理和照搬外国经验'恰恰是错误的做法，不属于马克思主义中国化时代化的内涵。"
+  },
+  {
+    "id": 2,
+    "question": "习近平在党的二十大报告中指出：\"实践证明，中国共产党为什么能，中国特色社会主义为什么好，归根到底是（）\"。",
+    "options": {
+      "A": "马克思主义经典作家行",
+      "B": "马克思主义行，中国化时代化的马克思主义行",
+      "C": "科学社会主义行",
+      "D": "十月革命行"
+    },
+    "answer": "B",
+    "page": "9",
+    "explanation": "习近平在党的二十大报告中明确指出：'实践证明，中国共产党为什么能，中国特色社会主义为什么好，归根到底是马克思主义行，是中国化时代化的马克思主义行。'这一重要论断深刻揭示了马克思主义特别是中国化时代化的马克思主义对党和国家事业发展的根本指导意义。"
+  },
+  {
+    "id": 3,
+    "question": "马克思主义中国化时代化的理论成果是一脉相承又（）的关系。",
+    "options": {
+      "A": "实事求是",
+      "B": "精益求精",
+      "C": "独立自主",
+      "D": "与时俱进"
+    },
+    "answer": "D",
+    "page": "11",
+    "explanation": "马克思主义中国化时代化的理论成果是一脉相承又与时俱进的关系。从毛泽东思想到邓小平理论、'三个代表'重要思想、科学发展观，再到习近平新时代中国特色社会主义思想，都贯穿着马克思主义的基本立场、观点和方法，同时又根据时代变化和实践发展不断创新发展。"
+  },
+  {
+    "id": 4,
+    "question": "（）成功开创了中国特色社会主义。",
+    "options": {
+      "A": "毛泽东思想",
+      "B": "邓小平理论",
+      "C": "“三个代表”重要思想",
+      "D": "科学发展观"
+    },
+    "answer": "B",
+    "page": "7-8",
+    "explanation": "邓小平理论成功开创了中国特色社会主义。邓小平同志在改革开放和社会主义现代化建设的实践中，第一次比较系统地初步回答了中国这样的经济文化比较落后的国家如何建设社会主义、如何巩固和发展社会主义的一系列基本问题，用新的思想、观点继承和发展了马克思主义。"
+  },
+  {
+    "id": 5,
+    "question": "1938 年毛泽东在()上作了《论新阶段》的报告，强调：“没有抽象的马克思主义，只有具",
+    "options": {
+      "A": "党的六届六中全会",
+      "B": "党的十七大",
+      "C": "党的十一届三中全会",
+      "D": "党的十九届六中全会"
+    },
+    "answer": "A",
+    "page": "2",
+    "explanation": "1938年，毛泽东在党的六届六中全会上作了《论新阶段》的报告，强调：'没有抽象的马克思主义，只有具体的马克思主义。'这标志着'马克思主义的中国化'这一命题的正式提出。六届六中全会是马克思主义中国化历史进程中的重要里程碑。"
+  },
+  {
+    "id": 6,
+    "question": "在改革开放和社会主义现代化建设新时期，形成()，实现了马克思主义中国化时代化新的",
+    "options": {
+      "A": "毛泽东思想",
+      "B": "中国特色社会主义理论体系",
+      "C": "习近平新时代中国特色社会主义思想",
+      "D": "邓小平理论"
+    },
+    "answer": "B",
+    "page": "8-9",
+    "explanation": "在改革开放和社会主义现代化建设新时期，形成了中国特色社会主义理论体系，实现了马克思主义中国化时代化新的飞跃。中国特色社会主义理论体系包括邓小平理论、'三个代表'重要思想、科学发展观和习近平新时代中国特色社会主义思想。"
+  },
+  {
+    "id": 7,
+    "question": "（）是马克思主义中国化时代化的第一次历史性飞跃。",
+    "options": {
+      "A": "毛泽东思想",
+      "B": "邓小平理论",
+      "C": "“三个代表”重要思想",
+      "D": "科学发展观"
+    },
+    "answer": "A",
+    "page": "7",
+    "explanation": "毛泽东思想是马克思主义中国化时代化的第一次历史性飞跃。毛泽东思想是马克思列宁主义在中国的运用和发展，是被实践证明了的关于中国革命和建设的正确的理论原则和经验总结，是中国共产党集体智慧的结晶。"
+  },
+  {
+    "id": 8,
+    "question": "毛泽东思想形成和发展的时代背景是（）。",
+    "options": {
+      "A": "中国沦为半殖民地半封建社会",
+      "B": "战争与革命成为时代主题",
+      "C": "第一次世界大战的爆发",
+      "D": "中国工人阶级的成长壮大"
+    },
+    "answer": "B",
+    "page": "15",
+    "explanation": "毛泽东思想形成和发展的时代背景是战争与革命成为时代主题。20世纪上半叶，帝国主义战争和无产阶级革命是时代主题，毛泽东思想正是在这样的时代背景下形成和发展起来的。"
+  },
+  {
+    "id": 9,
+    "question": "（）把毛泽东思想确立为党必须长期坚持的指导思想并写入党章。",
+    "options": {
+      "A": "遵义会议",
+      "B": "第一次政治协商会议",
+      "C": "党的七大",
+      "D": "新中国成立"
+    },
+    "answer": "C",
+    "page": "19",
+    "explanation": "1945年党的七大把毛泽东思想确立为党必须长期坚持的指导思想并写入党章。这是中国共产党历史上具有里程碑意义的事件，标志着毛泽东思想在全党指导地位的确立。"
+  },
+  {
+    "id": 10,
+    "question": "毛泽东思想的精髓是（）。",
+    "options": {
+      "A": "实事求是",
+      "B": "群众路线",
+      "C": "独立自主",
+      "D": "艰苦奋斗"
+    },
+    "answer": "A",
+    "page": "27",
+    "explanation": "毛泽东思想的精髓是实事求是。实事求是是毛泽东思想的活的灵魂的三个基本方面之一（另外两个是群众路线和独立自主），是毛泽东思想的出发点和根本点。"
+  },
+  {
+    "id": 11,
+    "question": "中国共产党的生命线和根本工作路线是（）。",
+    "options": {
+      "A": "解放思想",
+      "B": "群众路线",
+      "C": "独立自主",
+      "D": "实事求是"
+    },
+    "answer": "B",
+    "page": "29",
+    "explanation": "群众路线是中国共产党的生命线和根本工作路线。群众路线就是一切为了群众，一切依靠群众，从群众中来，到群众中去。这是中国共产党始终坚持的根本工作方法。"
+  },
+  {
+    "id": 12,
+    "question": "经济工作和其他一切工作的生命线是（）。",
+    "options": {
+      "A": "制度建设工作",
+      "B": "组织建设工作",
+      "C": "思想政治工作",
+      "D": "军队建设工作"
+    },
+    "answer": "C",
+    "page": "24",
+    "explanation": "思想政治工作是经济工作和其他一切工作的生命线。这是毛泽东同志提出的重要论断，强调了思想政治工作在党的各项工作中的重要地位和作用。"
+  },
+  {
+    "id": 13,
+    "question": "下面有关毛泽东思想的历史地位表述错误的是（）。",
+    "options": {
+      "A": "马克思主义中国化时代化的第一个重大理论成果",
+      "B": "中国革命和建设的科学指南",
+      "C": "中国共产党和中国人民宝贵的精神财富",
+      "D": "改革开放和社会主义现代化建设的根本指针"
+    },
+    "answer": "D",
+    "page": "16",
+    "explanation": "选项D'改革开放和社会主义现代化建设的根本指针'表述错误。毛泽东思想是中国革命和建设的科学指南，但不是改革开放和社会主义现代化建设的根本指针。改革开放和社会主义现代化建设的根本指针是中国特色社会主义理论体系。"
+  },
+  {
+    "id": 14,
+    "question": "近代中国最基本的国情是（）。",
+    "options": {
+      "A": "封建社会",
+      "B": "殖民地",
+      "C": "资本主义社会",
+      "D": "半殖民地半封建社会"
+    },
+    "answer": "D",
+    "page": "40",
+    "explanation": "近代中国最基本的国情是半殖民地半封建社会。这一国情决定了中国革命的对象是帝国主义和封建主义，革命的性质是资产阶级民主主义革命，革命的前途是社会主义。"
+  },
+  {
+    "id": 15,
+    "question": "（）是中国革命的战略阵地，是进行武装斗争和开展土地革命的依托。",
+    "options": {
+      "A": "工业较为发达大城市",
+      "B": "农村革命根据地",
+      "C": "沿海地区",
+      "D": "国外的支援"
+    },
+    "answer": "B",
+    "page": "58",
+    "explanation": "农村革命根据地是中国革命的战略阵地，是进行武装斗争和开展土地革命的依托。毛泽东同志创造性地提出了'农村包围城市、武装夺取政权'的革命道路，农村革命根据地是这条道路的重要组成部分。"
+  },
+  {
+    "id": 16,
+    "question": "毛泽东指出：“谁是我们的敌人？谁是我们的朋友？这个问题是革命的首要问题。”下列",
+    "options": {
+      "A": "帝国主义",
+      "B": "封建主义",
+      "C": "民族资产阶级",
+      "D": "官僚资本主义"
+    },
+    "answer": "C",
+    "page": "45-47",
+    "explanation": "新民主主义革命的对象是帝国主义、封建主义和官僚资本主义。民族资产阶级不是革命的对象，而是革命的动力之一，是统一战线的重要组成部分。"
+  },
+  {
+    "id": 17,
+    "question": "中国革命的主力军是（）。",
+    "options": {
+      "A": "城市小资产阶级",
+      "B": "农民",
+      "C": "无产阶级",
+      "D": "民族资产阶级"
+    },
+    "answer": "B",
+    "page": "48",
+    "explanation": "农民是中国革命的主力军。中国是一个农业大国，农民占人口的绝大多数。农民问题是中国革命的基本问题，农民是中国革命的主力军，新民主主义革命实质上就是中国共产党领导下的农民革命。"
+  },
+  {
+    "id": 18,
+    "question": "新民主主义革命的性质是（）。",
+    "options": {
+      "A": "无产阶级革命",
+      "B": "农民阶级革命",
+      "C": "旧式资产阶级民主主义革命",
+      "D": "新式的特殊的资产阶级民主主义革命"
+    },
+    "answer": "D",
+    "page": "50",
+    "explanation": "新民主主义革命的性质是新式的特殊的资产阶级民主主义革命。它既不同于旧式的资产阶级民主主义革命，也不同于社会主义革命，而是一种新式的、特殊的资产阶级民主主义革命。"
+  },
+  {
+    "id": 19,
+    "question": "下列选项中，不属于新民主主义革命三大法宝的是（）。",
+    "options": {
+      "A": "文化建设",
+      "B": "统一战线",
+      "C": "武装斗争",
+      "D": "党的建设"
+    },
+    "answer": "A",
+    "page": "59-62",
+    "explanation": "新民主主义革命的三大法宝是统一战线、武装斗争、党的建设。文化建设不属于三大法宝，而是新民主主义文化纲领的重要内容。"
+  },
+  {
+    "id": 20,
+    "question": "中国革命的最基本动力是（）。",
+    "options": {
+      "A": "城市小资产阶级",
+      "B": "农民",
+      "C": "无产阶级",
+      "D": "民族资产阶级"
+    },
+    "answer": "C",
+    "page": "47",
+    "explanation": "无产阶级是中国革命的最基本动力。无产阶级是中国新的社会生产力的代表，是近代中国最进步的阶级，是中国革命的领导力量。"
+  },
+  {
+    "id": 21,
+    "question": "区别新民主主义革命与旧民主主义革命的根本标志是（）。",
+    "options": {
+      "A": "革命指导思想不同",
+      "B": "革命领导权不同",
+      "C": "革命前途不同",
+      "D": "革命对象不同 新民主主义文化，就是无产阶级领导的人民大众的反帝反封建的文化，即()文化。"
+    },
+    "answer": "B",
+    "page": "49",
+    "explanation": "革命领导权不同是区别新民主主义革命与旧民主主义革命的根本标志。新民主主义革命由无产阶级领导，旧民主主义革命由资产阶级领导，这是两者最根本的区别。"
+  },
+  {
+    "id": 22,
+    "question": "新民主主义文化，就是无产阶级领导的人民大众的反帝反封建的文化，即()文化。",
+    "options": {
+      "A": "民族的、科学的、大众的",
+      "B": "资本主义",
+      "C": "封建主义",
+      "D": "官僚主义 新民主主义革命的三大法宝中，被称为掌握统一战线和武装斗争两个武器的“英勇战士”"
+    },
+    "answer": "A",
+    "page": "54",
+    "explanation": "新民主主义文化就是无产阶级领导的人民大众的反帝反封建的文化，即民族的、科学的、大众的文化。这种文化既不是资本主义文化，也不是封建主义文化，而是新民主主义文化。"
+  },
+  {
+    "id": 23,
+    "question": "新民主主义革命的三大法宝中，被称为掌握统一战线和武装斗争两个武器的“英勇战士”",
+    "options": {
+      "A": "党的建设",
+      "B": "经济建设",
+      "C": "农村根据地建设",
+      "D": "群众路线 新民主主义革命的中心问题和核心问题是（）"
+    },
+    "answer": "A",
+    "page": "64",
+    "explanation": "党的建设是新民主主义革命三大法宝中掌握统一战线和武装斗争两个武器的'英勇战士'。毛泽东同志指出，统一战线和武装斗争是战胜敌人的两个基本武器，而党的组织则是掌握统一战线和武装斗争这两个武器以实行对敌冲锋陷阵的英勇战士。"
+  },
+  {
+    "id": 24,
+    "question": "新民主主义革命的中心问题和核心问题是（）",
+    "options": {
+      "A": "无产阶级的领导权",
+      "B": "农民阶级的主力军地位",
+      "C": "民族资产阶级的领导权",
+      "D": "无产阶级同资产阶级的联盟 我国对农业的社会主义改造采取的过渡形式是（）。"
+    },
+    "answer": "A",
+    "page": "49",
+    "explanation": "无产阶级的领导权是新民主主义革命的中心问题和核心问题。新民主主义革命与旧民主主义革命的根本区别就在于领导权不同，新民主主义革命由无产阶级领导。"
+  },
+  {
+    "id": 25,
+    "question": "我国对农业的社会主义改造采取的过渡形式是（）。",
+    "options": {
+      "A": "生产队、生产大队、人民公社",
+      "B": "个体经济、集体经济、国营经济",
+      "C": "私有制、合作制、公有制",
+      "D": "互助组、初级社、高级社 新民主主义社会中，处于领导地位的经济成分是（）。"
+    },
+    "answer": "D",
+    "page": "78",
+    "explanation": "我国对农业的社会主义改造采取的过渡形式是互助组、初级社、高级社。这是从低级到高级逐步过渡的形式，符合中国农村的实际情况。"
+  },
+  {
+    "id": 26,
+    "question": "新民主主义社会中，处于领导地位的经济成分是（）。",
+    "options": {
+      "A": "个体经济",
+      "B": "私人和国家资本主义经济",
+      "C": "国营经济",
+      "D": "合作社经济 社会主义基本制度在中国初步确立起来的时间是（）。"
+    },
+    "answer": "C",
+    "page": "67",
+    "explanation": "国营经济是新民主主义社会中处于领导地位的经济成分。国营经济是通过没收官僚资本建立起来的社会主义性质的经济，在新民主主义社会中居于领导地位。"
+  },
+  {
+    "id": 27,
+    "question": "社会主义基本制度在中国初步确立起来的时间是（）。",
+    "options": {
+      "A": "1949 年",
+      "B": "1954 年",
+      "C": "1956 年",
+      "D": "1978 年 新民主主义社会的性质是（）。"
+    },
+    "answer": "C",
+    "page": "86-87",
+    "explanation": "1956年社会主义基本制度在中国初步确立起来。1956年底，对农业、手工业和资本主义工商业的社会主义改造基本完成，标志着社会主义基本制度在中国的确立。"
+  },
+  {
+    "id": 28,
+    "question": "新民主主义社会的性质是（）。",
+    "options": {
+      "A": "由新民主主义向社会主义转变的过渡性社会形态",
+      "B": "由封建主义向社会主义转变的过渡性社会形态",
+      "C": "一个独立的社会形态",
+      "D": "是属于资本主义体系的过渡性社会"
+    },
+    "answer": "A",
+    "page": "67",
+    "explanation": "新民主主义社会的性质是由新民主主义向社会主义转变的过渡性社会形态。新民主主义社会不是一个独立的社会形态，而是属于社会主义体系的过渡性社会。"
+  },
+  {
+    "id": 29,
+    "question": "我国新民主主义社会的前途是：（）",
+    "options": {
+      "A": "资本主义社会",
+      "B": "封建主义社会",
+      "C": "社会主义社会",
+      "D": "共产主义社会 党在过渡时期总路线的主要内容被概括为（）"
+    },
+    "answer": "C",
+    "page": "69",
+    "explanation": "我国新民主主义社会的前途是社会主义社会。新民主主义社会是向社会主义社会过渡的阶段，其前途必然是社会主义社会。"
+  },
+  {
+    "id": 30,
+    "question": "党在过渡时期总路线的主要内容被概括为（）",
+    "options": {
+      "A": "“一化三改”",
+      "B": "“一体两翼“",
+      "C": "“一个中心、两个基本点”",
+      "D": "“三个有利于” 中国共产党对个体农业和手工业实行社会主义改造的方针是（）"
+    },
+    "answer": "A",
+    "page": "72",
+    "explanation": "党在过渡时期总路线的主要内容被概括为'一化三改'。'一化'即社会主义工业化，'三改'即对个体农业、手工业和资本主义工商业的社会主义改造。"
+  },
+  {
+    "id": 31,
+    "question": "中国共产党对个体农业和手工业实行社会主义改造的方针是（）",
+    "options": {
+      "A": "趁热打铁，积极领导",
+      "B": "自愿互利，国家帮助",
+      "C": "积极领导，稳步前进",
+      "D": "国家帮助，典型示范 标志着资本主义工商业的社会主义改造已经基本完成是实现了（）"
+    },
+    "answer": "C",
+    "page": "76",
+    "explanation": "中国共产党对个体农业和手工业实行社会主义改造的方针是'积极领导，稳步前进'。这体现了党在社会主义改造中既积极主动又慎重稳妥的态度。"
+  },
+  {
+    "id": 32,
+    "question": "标志着资本主义工商业的社会主义改造已经基本完成是实现了（）",
+    "options": {
+      "A": "手工业合作社的建立",
+      "B": "农业合作化",
+      "C": "全行业公私合营",
+      "D": "生产责任制 中国共产党对资本主义工商业进行社会主义改造的主要方式是（）"
+    },
+    "answer": "C",
+    "page": "83",
+    "explanation": "全行业公私合营标志着资本主义工商业的社会主义改造已经基本完成。1956年初，全国范围内出现了全行业公私合营的高潮，标志着资本主义工商业的社会主义改造基本完成。"
+  },
+  {
+    "id": 33,
+    "question": "中国共产党对资本主义工商业进行社会主义改造的主要方式是（）",
+    "options": {
+      "A": "和平赎买",
+      "B": "统购统销",
+      "C": "公私合营",
+      "D": "合作化 毛泽东在《论十大关系》中论述的第一大关系是（）。"
+    },
+    "answer": "A",
+    "page": "69",
+    "explanation": "和平赎买是中国共产党对资本主义工商业进行社会主义改造的主要方式。通过国家资本主义的形式，逐步将资本主义工商业改造为社会主义公有制企业。"
+  },
+  {
+    "id": 34,
+    "question": "毛泽东在《论十大关系》中论述的第一大关系是（）。",
+    "options": {
+      "A": "重工业和轻工业、农业的关系",
+      "B": "中国和外国的关系",
+      "C": "是非关系",
+      "D": "汉族和少数民族的关系 毛泽东在《关于正确处理人民内部矛盾的问题》的报告中指出，社会主义社会的基本矛盾"
+    },
+    "answer": "A",
+    "page": "95",
+    "explanation": "毛泽东在《论十大关系》中论述的第一大关系是重工业和轻工业、农业的关系。这体现了毛泽东对经济建设中各种关系的深入思考。"
+  },
+  {
+    "id": 35,
+    "question": "毛泽东在《关于正确处理人民内部矛盾的问题》的报告中指出，社会主义社会的基本矛盾",
+    "options": {
+      "A": "人民内部的非对抗性的矛盾",
+      "B": "生产关系和生产力之间、上层建筑和经济基础之间的矛盾",
+      "C": "无产阶级和资产阶级之间、社会主义和资本主义之间的矛盾",
+      "D": "人民日益增长的物质文化需要同落后的社会生产之间的矛盾"
+    },
+    "answer": "B",
+    "page": "98",
+    "explanation": "毛泽东在《关于正确处理人民内部矛盾的问题》的报告中指出，社会主义社会的基本矛盾是生产关系和生产力之间、上层建筑和经济基础之间的矛盾。这是对社会主义社会矛盾问题的科学认识。"
+  },
+  {
+    "id": 36,
+    "question": "毛泽东先后在中央政治局扩大会议和最高国务会议上，作了( )的报告，标志着党探索中国",
+    "options": {
+      "A": "《论人民民主专政》",
+      "B": "《论十大关系》",
+      "C": "《纪念孙中山先生》",
+      "D": "《矛盾论》 解决敌我矛盾，应采用（）。"
+    },
+    "answer": "B",
+    "page": "94",
+    "explanation": "毛泽东先后在中央政治局扩大会议和最高国务会议上，作了《论十大关系》的报告，标志着党探索中国社会主义建设道路的良好开端。《论十大关系》提出了一系列关于社会主义建设的重要思想。"
+  },
+  {
+    "id": 37,
+    "question": "解决敌我矛盾，应采用（）。",
+    "options": {
+      "A": "说服的方法",
+      "B": "民主的方法",
+      "C": "专政的方法",
+      "D": "教育的方法 毛泽东指出，社会主义又可分为两个阶段，第一个阶段是不发达的社会主义，第二个阶段"
+    },
+    "answer": "C",
+    "page": "100",
+    "explanation": "解决敌我矛盾，应采用专政的方法。敌我矛盾是对抗性的矛盾，必须用专政的方法来解决，即对敌人实行专政。"
+  },
+  {
+    "id": 38,
+    "question": "毛泽东指出，社会主义又可分为两个阶段，第一个阶段是不发达的社会主义，第二个阶段",
+    "options": {
+      "A": "社会主义初级阶段",
+      "B": "共产主义初级阶段",
+      "C": "社会主义高级阶段",
+      "D": "比较发达的社会主义 鉴于中国社会生产力落后、经济基础薄弱的情况，毛泽东提出了()发展国民经济的总方针。"
+    },
+    "answer": "D",
+    "page": "104",
+    "explanation": "毛泽东指出，社会主义又可分为两个阶段，第一个阶段是不发达的社会主义，第二个阶段是比较发达的社会主义。这一思想为后来社会主义初级阶段理论的形成提供了重要启示。"
+  },
+  {
+    "id": 39,
+    "question": "鉴于中国社会生产力落后、经济基础薄弱的情况，毛泽东提出了()发展国民经济的总方针。",
+    "options": {
+      "A": "“两条腿走路”",
+      "B": "以农业为基础，以工业为主导，以农轻重为序",
+      "C": "既反保守又反冒进、坚持在综合平衡中稳步前进",
+      "D": "“百花齐放、百家争鸣”"
+    },
+    "answer": "B",
+    "page": "102",
+    "explanation": "鉴于中国社会生产力落后、经济基础薄弱的情况，毛泽东提出了以农业为基础，以工业为主导，以农轻重为序发展国民经济的总方针。这是对中国经济发展规律的正确认识。"
+  },
+  {
+    "id": 40,
+    "question": "关于正确处理人民内部矛盾的方针。毛泽东指出，用()解决人民内部矛盾，这是一个总方",
+    "options": {
+      "A": "说服的方法",
+      "B": "专政的方法",
+      "C": "民主的方法",
+      "D": "教育的方法 在科技工作方面，党提出了“向科学进军”的口号，强调实现四个现代化，关键在于（）。"
+    },
+    "answer": "C",
+    "page": "100",
+    "explanation": "关于正确处理人民内部矛盾的方针，毛泽东指出，用民主的方法解决人民内部矛盾，这是一个总方针。人民内部矛盾是非对抗性的矛盾，应该用民主的方法、说服教育的方法来解决。"
+  },
+  {
+    "id": 41,
+    "question": "在科技工作方面，党提出了“向科学进军”的口号，强调实现四个现代化，关键在于（）。",
+    "options": {
+      "A": "农业现代化",
+      "B": "工业现代化",
+      "C": "教育现代化",
+      "D": "科学技术现代化 1982 年邓小平在党的十二大开幕词中明确提出：走自己的道路，（）。"
+    },
+    "answer": "D",
+    "page": "106",
+    "explanation": "在科技工作方面，党提出了'向科学进军'的口号，强调实现四个现代化，关键在于科学技术现代化。科学技术现代化是实现其他三个现代化的基础和关键。"
+  },
+  {
+    "id": 42,
+    "question": "1982 年邓小平在党的十二大开幕词中明确提出：走自己的道路，（）。",
+    "options": {
+      "A": "建设社会主义市场经济",
+      "B": "建设有中国特色社会主义",
+      "C": "实现马克思主义中国化时代化",
+      "D": "建设社会主义初级阶段 中国特色社会主义理论体系形成的实践基础是（）。"
+    },
+    "answer": "B",
+    "page": "135",
+    "explanation": "1982年邓小平在党的十二大开幕词中明确提出：走自己的道路，建设有中国特色社会主义。这是邓小平理论的核心命题，标志着中国特色社会主义道路的正式开辟。"
+  },
+  {
+    "id": 43,
+    "question": "中国特色社会主义理论体系形成的实践基础是（）。",
+    "options": {
+      "A": "新民主主义革命实践",
+      "B": "社会主义改造实践",
+      "C": "改革开放和社会主义现代化建设实践",
+      "D": "社会主义建设初期实践"
+    },
+    "answer": "C",
+    "page": "129",
+    "explanation": "中国特色社会主义理论体系形成的实践基础是改革开放和社会主义现代化建设实践。这一理论体系是在改革开放的伟大实践中形成和发展起来的。"
+  },
+  {
+    "id": 44,
+    "question": "20 世纪 70 年代，整个世界发生着大变动大调整。最显著的变化，就是( )成为时代主题。",
+    "options": {
+      "A": "革命与战争",
+      "B": "和平与发展",
+      "C": "合作与共赢",
+      "D": "开放与融通 1987 年召开的党的十三大，第一次比较系统地论述了我国社会主义初级阶段理论，明确"
+    },
+    "answer": "B",
+    "page": "119",
+    "explanation": "20世纪70年代，整个世界发生着大变动大调整，最显著的变化就是和平与发展成为时代主题。这一判断为我国改革开放和社会主义现代化建设提供了重要的时代背景。"
+  },
+  {
+    "id": 45,
+    "question": "1987 年召开的党的十三大，第一次比较系统地论述了我国社会主义初级阶段理论，明确",
+    "options": {
+      "A": "社会主义全面发展",
+      "B": "“三步走”",
+      "C": "“一个中心、两个基本点”",
+      "D": "“四项基本原则” （）是中国特色社会主义理论体系在新世纪新阶段的新发展。"
+    },
+    "answer": "C",
+    "page": "136",
+    "explanation": "1987年召开的党的十三大，第一次比较系统地论述了我国社会主义初级阶段理论，明确概括和全面阐发了党的'一个中心、两个基本点'的基本路线。这是中国特色社会主义理论体系的重要内容。"
+  },
+  {
+    "id": 46,
+    "question": "（）是中国特色社会主义理论体系在新世纪新阶段的新发展。",
+    "options": {
+      "A": "科学发展观",
+      "B": "“三个代表”重要思想",
+      "C": "改革开放",
+      "D": "邓小平理论 首次对“三个代表”进行了比较全面的阐述是（）"
+    },
+    "answer": "A",
+    "page": "144",
+    "explanation": "科学发展观是中国特色社会主义理论体系在新世纪新阶段的新发展。科学发展观深刻认识和回答了新形势下实现什么样的发展、怎样发展等重大问题。"
+  },
+  {
+    "id": 47,
+    "question": "首次对“三个代表”进行了比较全面的阐述是（）",
+    "options": {
+      "A": "1989 年党十四届三中全会",
+      "B": "1997 年党十五大",
+      "C": "2000 年江泽民在广东考察工作时",
+      "D": "2001 年 7 月 1 日江泽民在庆祝中国共产党成立 80 周年大会上的讲话"
+    },
+    "answer": "C",
+    "page": "140",
+    "explanation": "2000年江泽民在广东考察工作时，首次对'三个代表'进行了比较全面的阐述。'三个代表'重要思想是面向21世纪的中国化的马克思主义。"
+  },
+  {
+    "id": 48,
+    "question": "1978 年 12 月召开的党的十一届三中全会，重新确立了( )的思想路线，彻底否定了“以阶",
+    "options": {
+      "A": "实事求是",
+      "B": "群众路线",
+      "C": "独立自主",
+      "D": "解放思想 邓小平理论首要的基本的理论问题是（）。"
+    },
+    "answer": "A",
+    "page": "135",
+    "explanation": "1978年12月召开的党的十一届三中全会，重新确立了实事求是的思想路线，彻底否定了'以阶级斗争为纲'的错误理论和实践。这是新中国成立以来党的历史上具有深远意义的伟大转折。"
+  },
+  {
+    "id": 49,
+    "question": "邓小平理论首要的基本的理论问题是（）。",
+    "options": {
+      "A": "社会主义的根本任务问题",
+      "B": "社会主义的发展阶段问题",
+      "C": "社会主义的发展动力问题",
+      "D": "什么是社会主义，怎样建设社会主义的问题"
+    },
+    "answer": "D",
+    "page": "151",
+    "explanation": "邓小平理论首要的基本的理论问题是什么是社会主义、怎样建设社会主义的问题。这是邓小平理论的核心问题，贯穿于邓小平理论的各个方面。"
+  },
+  {
+    "id": 50,
+    "question": "社会主义的根本任务是（）。",
+    "options": {
+      "A": "群众运动",
+      "B": "阶级斗争",
+      "C": "发展生产力",
+      "D": "掌控意识形态领导权 下面关于社会主义的本质表述，错误的是（）。"
+    },
+    "answer": "C",
+    "page": "163",
+    "explanation": "社会主义的根本任务是发展生产力。这是马克思主义的基本原则，也是社会主义的本质要求。"
+  },
+  {
+    "id": 51,
+    "question": "下面关于社会主义的本质表述，错误的是（）。",
+    "options": {
+      "A": "解放生产力，发展生产力",
+      "B": "消灭剥削，消除两极分化",
+      "C": "最终达到共同富裕",
+      "D": "基本实现社会主义现代化 邓小平理论的精髓是（）。"
+    },
+    "answer": "D",
+    "page": "153",
+    "explanation": "选项D'基本实现社会主义现代化'表述错误。社会主义的本质是解放生产力，发展生产力，消灭剥削，消除两极分化，最终达到共同富裕。'基本实现社会主义现代化'是社会主义初级阶段的目标，不是社会主义本质的内容。"
+  },
+  {
+    "id": 52,
+    "question": "邓小平理论的精髓是（）。",
+    "options": {
+      "A": "“三个有利于”标准",
+      "B": "四项基本原则",
+      "C": "解放思想、实事求是",
+      "D": "改革开放 （）是建设中国特色社会主义的总依据。"
+    },
+    "answer": "C",
+    "page": "156",
+    "explanation": "邓小平理论的精髓是解放思想、实事求是。解放思想、实事求是是邓小平理论的活的灵魂，是邓小平理论形成和发展的思想基础。"
+  },
+  {
+    "id": 53,
+    "question": "（）是建设中国特色社会主义的总依据。",
+    "options": {
+      "A": "改革开放理论",
+      "B": "社会主义市场经济理论",
+      "C": "社会主义初级阶段理论",
+      "D": "党的建设理论 （）是强国之路，是我们党和国家发展进步的活力源泉。"
+    },
+    "answer": "C",
+    "page": "160",
+    "explanation": "社会主义初级阶段理论是建设中国特色社会主义的总依据。社会主义初级阶段理论是中国特色社会主义理论体系的重要组成部分，是党制定和执行正确的路线方针政策的根本依据。"
+  },
+  {
+    "id": 54,
+    "question": "（）是强国之路，是我们党和国家发展进步的活力源泉。",
+    "options": {
+      "A": "改革开放",
+      "B": "四项基本原则",
+      "C": "经济建设",
+      "D": "阶级斗争 邓小平提出的评价改革和各方面是非得失的标准是（）。"
+    },
+    "answer": "A",
+    "page": "162",
+    "explanation": "改革开放是强国之路，是我们党和国家发展进步的活力源泉。改革开放是决定当代中国命运的关键抉择，是发展中国特色社会主义、实现中华民族伟大复兴的必由之路。"
+  },
+  {
+    "id": 55,
+    "question": "邓小平提出的评价改革和各方面是非得失的标准是（）。",
+    "options": {
+      "A": "“三个有利于”",
+      "B": "生产力决定生产关系",
+      "C": "社会主义本质论",
+      "D": "四项基本原则 “和平统一、一国两制”的核心是（）。"
+    },
+    "answer": "A",
+    "page": "169",
+    "explanation": "邓小平提出的评价改革和各方面是非得失的标准是'三个有利于'。'三个有利于'标准即是否有利于发展社会主义社会的生产力，是否有利于增强社会主义国家的综合国力，是否有利于提高人民的生活水平。"
+  },
+  {
+    "id": 56,
+    "question": "“和平统一、一国两制”的核心是（）。",
+    "options": {
+      "A": "坚持一个中国",
+      "B": "两制并存",
+      "C": "高度自治",
+      "D": "尽最大努力争取和平统一 中国特色社会主义理论体系的开篇之作是（）。"
+    },
+    "answer": "A",
+    "page": "178",
+    "explanation": "'和平统一、一国两制'的核心是坚持一个中国。一个中国原则是'一国两制'的核心和政治基础，世界上只有一个中国，台湾是中国领土不可分割的一部分。"
+  },
+  {
+    "id": 57,
+    "question": "中国特色社会主义理论体系的开篇之作是（）。",
+    "options": {
+      "A": "毛泽东思想",
+      "B": "邓小平理论",
+      "C": "“三个代表”重要思想",
+      "D": "科学发展观 四项基本原则不包括（）"
+    },
+    "answer": "B",
+    "page": "188",
+    "explanation": "邓小平理论是中国特色社会主义理论体系的开篇之作。邓小平理论第一次比较系统地初步回答了中国这样的经济文化比较落后的国家如何建设社会主义、如何巩固和发展社会主义的一系列基本问题。"
+  },
+  {
+    "id": 58,
+    "question": "四项基本原则不包括（）",
+    "options": {
+      "A": "坚持共产党的领导",
+      "B": "坚持马列主义毛泽东思想",
+      "C": "坚持社会主义道路",
+      "D": "坚持“一国两制” （）是立国之本，是我们党和国家生存发展的政治基石。"
+    },
+    "answer": "D",
+    "page": "160",
+    "explanation": "四项基本原则不包括坚持'一国两制'。四项基本原则是指坚持社会主义道路，坚持人民民主专政，坚持中国共产党的领导，坚持马克思列宁主义毛泽东思想。"
+  },
+  {
+    "id": 59,
+    "question": "（）是立国之本，是我们党和国家生存发展的政治基石。",
+    "options": {
+      "A": "改革开放",
+      "B": "四项基本原则",
+      "C": "经济建设",
+      "D": "阶级斗争 （）提出了党在社会主义初级阶段的基本路线。"
+    },
+    "answer": "B",
+    "page": "162",
+    "explanation": "四项基本原则是立国之本，是我们党和国家生存发展的政治基石。四项基本原则是支撑社会主义大厦的四根支柱，动摇了任何一项，那就动摇了整个社会主义事业。"
+  },
+  {
+    "id": 60,
+    "question": "（）提出了党在社会主义初级阶段的基本路线。",
+    "options": {
+      "A": "党的十一届三中全会",
+      "B": "党的十二大",
+      "C": "党的十三大",
+      "D": "党的十五大 “一个中心，两个基本点”不包括（）"
+    },
+    "answer": "C",
+    "page": "159",
+    "explanation": "党的十三大提出了党在社会主义初级阶段的基本路线。1987年党的十三大系统阐述了社会主义初级阶段理论，明确概括了党在社会主义初级阶段的基本路线。"
+  },
+  {
+    "id": 61,
+    "question": "“一个中心，两个基本点”不包括（）",
+    "options": {
+      "A": "坚持四项基本原则",
+      "B": "以政治建设为中心",
+      "C": "坚持改革开放",
+      "D": "以经济建设为中心 党要承担起推动中国社会进步的历史责任，必须始终紧紧抓住（）这个执政兴国的第一要"
+    },
+    "answer": "B",
+    "page": "160",
+    "explanation": "'一个中心，两个基本点'不包括以政治建设为中心。'一个中心'是指以经济建设为中心，'两个基本点'是指坚持四项基本原则、坚持改革开放。"
+  },
+  {
+    "id": 62,
+    "question": "党要承担起推动中国社会进步的历史责任，必须始终紧紧抓住（）这个执政兴国的第一要",
+    "options": {
+      "A": "以人为本",
+      "B": "发展",
+      "C": "政治文明",
+      "D": "社会主义市场经济体制 贯彻“三个代表”重要思想，关键在于（）。"
+    },
+    "answer": "B",
+    "page": "204",
+    "explanation": "发展是执政兴国的第一要务。党要承担起推动中国社会进步的历史责任，必须始终紧紧抓住发展这个执政兴国的第一要务。"
+  },
+  {
+    "id": 63,
+    "question": "贯彻“三个代表”重要思想，关键在于（）。",
+    "options": {
+      "A": "坚持与时俱进",
+      "B": "坚持执政为民",
+      "C": "坚持党的先进性",
+      "D": "坚持统筹兼顾 贯彻“三个代表”重要思想，核心在坚持党的先进性，本质在（）。"
+    },
+    "answer": "A",
+    "page": "203",
+    "explanation": "贯彻'三个代表'重要思想，关键在于坚持与时俱进。与时俱进是马克思主义最重要的理论品质，是贯彻'三个代表'重要思想的关键。"
+  },
+  {
+    "id": 64,
+    "question": "贯彻“三个代表”重要思想，核心在坚持党的先进性，本质在（）。",
+    "options": {
+      "A": "坚持为人民服务",
+      "B": "坚持党的领导",
+      "C": "坚持执政为民",
+      "D": "坚持统筹兼顾 （）是凝聚和激励全国各族人民的重要力量，是综合国力的重要标志。"
+    },
+    "answer": "C",
+    "page": "203",
+    "explanation": "贯彻'三个代表'重要思想，核心在坚持党的先进性，本质在坚持执政为民。执政为民是'三个代表'重要思想的本质要求。"
+  },
+  {
+    "id": 65,
+    "question": "（）是凝聚和激励全国各族人民的重要力量，是综合国力的重要标志。",
+    "options": {
+      "A": "中国特色社会主义政治",
+      "B": "改革开放",
+      "C": "社会主义现代化建设",
+      "D": "中国特色社会主义文化 （）是我们党站在时代前列，保持先进性的根本体现和根本要求。"
+    },
+    "answer": "D",
+    "page": "197",
+    "explanation": "中国特色社会主义文化是凝聚和激励全国各族人民的重要力量，是综合国力的重要标志。文化越来越成为民族凝聚力和创造力的重要源泉，越来越成为综合国力竞争的重要因素。"
+  },
+  {
+    "id": 66,
+    "question": "（）是我们党站在时代前列，保持先进性的根本体现和根本要求。",
+    "options": {
+      "A": "必须牢牢把握先进文化的前进方向，建设资本主义精神文明",
+      "B": "不断实现好维护好发展好最广大人民的一切利益",
+      "C": "满足人民群众日益增长的财富需要",
+      "D": "始终代表中国先进生产力的发展要求，大力促进先进生产力的发展 下面哪一项不属于“三个代表”重要思想的核心观点。（）"
+    },
+    "answer": "D",
+    "page": "193",
+    "explanation": "始终代表中国先进生产力的发展要求是我们党站在时代前列，保持先进性的根本体现和根本要求。生产力是社会发展的最终决定力量，代表先进生产力的发展要求是保持党的先进性的根本要求。"
+  },
+  {
+    "id": 67,
+    "question": "下面哪一项不属于“三个代表”重要思想的核心观点。（）",
+    "options": {
+      "A": "始终代表中国先进生产力的发展要求",
+      "B": "始终代表中国先进文化的前进方向",
+      "C": "始终代表中国最广大人民的根本利益",
+      "D": "始终站在历史发展和时代前列 （）是决定我国前途和命运的根本力量，是历史的真正创造者。"
+    },
+    "answer": "D",
+    "page": "192-200",
+    "explanation": "'三个代表'重要思想的核心观点是：始终代表中国先进生产力的发展要求，始终代表中国先进文化的前进方向，始终代表中国最广大人民的根本利益。选项D'始终站在历史发展和时代前列'不属于'三个代表'的核心观点。"
+  },
+  {
+    "id": 68,
+    "question": "（）是决定我国前途和命运的根本力量，是历史的真正创造者。",
+    "options": {
+      "A": "时间",
+      "B": "伟人",
+      "C": "英雄",
+      "D": "人民 建立社会主义市场经济体制，必须坚持和完善( )的社会主义基本经济制度。"
+    },
+    "answer": "D",
+    "page": "200",
+    "explanation": "人民是决定我国前途和命运的根本力量，是历史的真正创造者。人民群众是历史的创造者，是推动历史发展的决定力量。"
+  },
+  {
+    "id": 69,
+    "question": "建立社会主义市场经济体制，必须坚持和完善( )的社会主义基本经济制度。",
+    "options": {
+      "A": "公有制为主体、多种所有制经济共同发展",
+      "B": "各类市场主体自由竞争",
+      "C": "建立健全社会主义分配制度",
+      "D": "国家保护一切财产安全和利益 建设社会主义政治文明，最根本的就是要（）"
+    },
+    "answer": "A",
+    "page": "209",
+    "explanation": "建立社会主义市场经济体制，必须坚持和完善公有制为主体、多种所有制经济共同发展的社会主义基本经济制度。这是中国特色社会主义制度的重要支柱。"
+  },
+  {
+    "id": 70,
+    "question": "建设社会主义政治文明，最根本的就是要（）",
+    "options": {
+      "A": "坚持党的领导、人民当家作主和依法治国的有机统一",
+      "B": "全面进行政治体制改革，建立宪政国家",
+      "C": "全面建成小康社会，实现经济高速增长扩张",
+      "D": "坚持改革开放，建设法制国家 坚持中国共产党的领导，核心是（）"
+    },
+    "answer": "A",
+    "page": "213",
+    "explanation": "建设社会主义政治文明，最根本的就是要坚持党的领导、人民当家作主和依法治国的有机统一。这是中国特色社会主义政治发展道路的核心内容。"
+  },
+  {
+    "id": 71,
+    "question": "坚持中国共产党的领导，核心是（）",
+    "options": {
+      "A": "坚持党要管党",
+      "B": "坚持党的先进性",
+      "C": "坚持党的优良传统",
+      "D": "坚持党的阶级基础 江泽民强调推进党的建设新的伟大工程，重点是加强（）"
+    },
+    "answer": "B",
+    "page": "219",
+    "explanation": "坚持中国共产党的领导，核心是坚持党的先进性。党的先进性是马克思主义政党的本质属性，是党的生命所系、力量所在。"
+  },
+  {
+    "id": 72,
+    "question": "江泽民强调推进党的建设新的伟大工程，重点是加强（）",
+    "options": {
+      "A": "党的群众基础",
+      "B": "党的执政能力建设",
+      "C": "党的阶级基础",
+      "D": "党的组织建设 江泽民强调，加强和改进党的作风建设，核心问题是（）"
+    },
+    "answer": "B",
+    "page": "219",
+    "explanation": "江泽民强调推进党的建设新的伟大工程，重点是加强党的执政能力建设。执政能力建设是党执政后的一项根本建设。"
+  },
+  {
+    "id": 73,
+    "question": "江泽民强调，加强和改进党的作风建设，核心问题是（）",
+    "options": {
+      "A": "保持党的执政地位",
+      "B": "坚持党的领导地位",
+      "C": "保持党的利益不受影响与损害",
+      "D": "保持党同人民群众的血肉联系 党领导人民治理国家的基本方略是（）。"
+    },
+    "answer": "D",
+    "page": "223",
+    "explanation": "江泽民强调，加强和改进党的作风建设，核心问题是保持党同人民群众的血肉联系。这是党的作风建设的核心问题，关系党的生死存亡。"
+  },
+  {
+    "id": 74,
+    "question": "党领导人民治理国家的基本方略是（）。",
+    "options": {
+      "A": "依法治国",
+      "B": "以德治国",
+      "C": "人才强国",
+      "D": "科教兴国 “三个代表”重要思想在邓小平理论的基础上，进一步回答了什么是社会主义、怎样建设"
+    },
+    "answer": "A",
+    "page": "214",
+    "explanation": "依法治国是党领导人民治理国家的基本方略。依法治国是社会主义民主政治的基本要求，是党领导人民治理国家的基本方略。"
+  },
+  {
+    "id": 75,
+    "question": "“三个代表”重要思想在邓小平理论的基础上，进一步回答了什么是社会主义、怎样建设",
+    "options": {
+      "A": "什么是社会主义、怎样建设社会主义的问题",
+      "B": "什么是革命，怎样进行革命的问题",
+      "C": "什么是发展，怎样发展的问题",
+      "D": "建设什么样的党、怎样建设党的问题"
+    },
+    "answer": "D",
+    "page": "228",
+    "explanation": "'三个代表'重要思想在邓小平理论的基础上，进一步回答了什么是社会主义、怎样建设社会主义的问题，创造性地回答了建设什么样的党、怎样建设党的问题。"
+  },
+  {
+    "id": 76,
+    "question": "科学发展观的第一要义是（  ）",
+    "options": {
+      "A": "推动经济社会发展",
+      "B": "全面协调可持续",
+      "C": "统筹兼顾",
+      "D": "以人为本 科学发展观强调，推动经济持续健康发展，必须坚持以( )为主题，以加快转变经济发展方"
+    },
+    "answer": "A",
+    "page": "230",
+    "explanation": "科学发展观的第一要义是推动经济社会发展。科学发展观是用来指导发展的，科学发展观的第一要义是发展。"
+  },
+  {
+    "id": 77,
+    "question": "科学发展观强调，推动经济持续健康发展，必须坚持以( )为主题，以加快转变经济发展方",
+    "options": {
+      "A": "以人为本",
+      "B": "科学发展",
+      "C": "中国特色社会主义现代经济体系",
+      "D": "人的全面发展 （  ）是科学发展观的核心立场。"
+    },
+    "answer": "B",
+    "page": "238",
+    "explanation": "科学发展观强调，推动经济持续健康发展，必须坚持以科学发展为主题，以加快转变经济发展方式为主线。这是关系我国发展全局的战略抉择。"
+  },
+  {
+    "id": 78,
+    "question": "（  ）是科学发展观的核心立场。",
+    "options": {
+      "A": "推动经济社会发展",
+      "B": "全面协调可持续",
+      "C": "统筹兼顾",
+      "D": "以人为本 科学发展观的基本要求是（  ）"
+    },
+    "answer": "D",
+    "page": "234",
+    "explanation": "以人为本是科学发展观的核心立场。科学发展观强调，坚持以人为本，就是要以实现人的全面发展为目标，从人民群众的根本利益出发谋发展、促发展。"
+  },
+  {
+    "id": 79,
+    "question": "科学发展观的基本要求是（  ）",
+    "options": {
+      "A": "推动经济社会发展",
+      "B": "全面协调可持续",
+      "C": "统筹兼顾",
+      "D": "以人为本 （  ）是科学发展观的根本方法。"
+    },
+    "answer": "B",
+    "page": "237",
+    "explanation": "全面协调可持续是科学发展观的基本要求。科学发展观强调，要按照中国特色社会主义事业总体布局，全面推进经济建设、政治建设、文化建设、社会建设。"
+  },
+  {
+    "id": 80,
+    "question": "（  ）是科学发展观的根本方法。",
+    "options": {
+      "A": "推动经济社会发展",
+      "B": "全面城市可持续",
+      "C": "统筹兼顾",
+      "D": "以人为本 全面协调可持续中的“全面”是指（  ）。"
+    },
+    "answer": "C",
+    "page": "239",
+    "explanation": "统筹兼顾是科学发展观的根本方法。科学发展观强调，要正确认识和妥善处理中国特色社会主义事业中的重大关系，统筹城乡发展、区域发展、经济社会发展、人与自然和谐发展、国内发展和对外开放。"
+  },
+  {
+    "id": 81,
+    "question": "全面协调可持续中的“全面”是指（  ）。",
+    "options": {
+      "A": "发展要有协调性、均衡性，各个方面、各个环节的发展相互适应、相互促进",
+      "B": "发展要有全面性、整体性，不仅经济发展，而且各个方面都要发展",
+      "C": "发展要有持久性、连续性，不仅当前要发展，而且要保证长远发展",
+      "D": "发展要有速度、效率、时间，不仅追求公平、正义、平衡 全面协调可持续中的“协调”是指（  ）。"
+    },
+    "answer": "B",
+    "page": "238",
+    "explanation": "全面协调可持续中的'全面'是指发展要有全面性、整体性，不仅经济发展，而且各个方面都要发展。'全面'强调的是发展的广度。"
+  },
+  {
+    "id": 82,
+    "question": "全面协调可持续中的“协调”是指（  ）。",
+    "options": {
+      "A": "发展要有协调性、均衡性，各个方面、各个环节发展要相互适应、相互促进",
+      "B": "发展要有全面性、整体性，不仅经济发展，而且各个方面都要发展",
+      "C": "发展要有持久性、连续性，不仅当前要发展，而且要保证长远发展",
+      "D": "发展要有速度、效率、时间，不仅追求公平、正义、平衡 全面协调可持续中的“可持续”是指（  ）。"
+    },
+    "answer": "A",
+    "page": "238",
+    "explanation": "全面协调可持续中的'协调'是指发展要有协调性、均衡性，各个方面、各个环节的发展要相互适应、相互促进。'协调'强调的是发展的均衡性。"
+  },
+  {
+    "id": 83,
+    "question": "全面协调可持续中的“可持续”是指（  ）。",
+    "options": {
+      "A": "发展要有协调性、均衡性，各个方面、各个环节发展要相互适应、相互促进",
+      "B": "发展要有全面性、整体性，不仅经济发展，而且各个方面都要发展",
+      "C": "发展要有持久性、连续性，不仅当前要发展，而且要保证长远发展",
+      "D": "发展要有速度、效率、时间，不仅追求公平、正义、平衡"
+    },
+    "answer": "C",
+    "page": "238",
+    "explanation": "全面协调可持续中的'可持续'是指发展要有持久性、连续性，不仅当前要发展，而且要保证长远发展。'可持续'强调的是发展的持久性。"
+  },
+  {
+    "id": 84,
+    "question": "科学发展观强调，推动经济持续健康发展，必须坚持以科学发展为主题，以（  ）为主线。",
+    "options": {
+      "A": "以人为本",
+      "B": "加快转变经济发展方式",
+      "C": "中国特色社会主义现代经济体系",
+      "D": "人的全面发展 科学发展观强调，社会主义民主政治的本质和核心是（  ）"
+    },
+    "answer": "B",
+    "page": "242",
+    "explanation": "科学发展观强调，推动经济持续健康发展，必须坚持以科学发展为主题，以加快转变经济发展方式为主线。这是关系我国发展全局的战略抉择。"
+  },
+  {
+    "id": 85,
+    "question": "科学发展观强调，社会主义民主政治的本质和核心是（  ）",
+    "options": {
+      "A": "人民当家作主",
+      "B": "发展社会主义社会生产力",
+      "C": "建立现代经济体系",
+      "D": "实现人民愿望、满足人民需要、维护人民利益"
+    },
+    "answer": "A",
+    "page": "245",
+    "explanation": "科学发展观强调，社会主义民主政治的本质和核心是人民当家作主。人民当家作主是社会主义民主政治的本质和核心，是社会主义政治文明建设的根本出发点和归宿。"
+  },
+  {
+    "id": 86,
+    "question": "胡锦涛指出：“( )是马克思主义政党的本质属性，是马克思主义政党的生命所系、力量所",
+    "options": {
+      "A": "先进性",
+      "B": "阶级性",
+      "C": "全民性",
+      "D": "群众性 科学发展观最鲜明的精神实质是（  ）"
+    },
+    "answer": "A",
+    "page": "257",
+    "explanation": "胡锦涛指出：'先进性是马克思主义政党的本质属性，是马克思主义政党的生命所系、力量所在。'这是对马克思主义政党本质属性的深刻揭示。"
+  },
+  {
+    "id": 87,
+    "question": "科学发展观最鲜明的精神实质是（  ）",
+    "options": {
+      "A": "解放思想、实事求是、与时俱进、求真务实",
+      "B": "立党为公，执政为民",
+      "C": "实事求是、群众路线、独立自主",
+      "D": "真理性与实践性、科学性与开放性和历史性与时代性的统一 科学发展观（  ）"
+    },
+    "answer": "A",
+    "page": "260",
+    "explanation": "科学发展观最鲜明的精神实质是解放思想、实事求是、与时俱进、求真务实。这四个方面相互联系、相互促进，是科学发展观最鲜明的精神实质。"
+  },
+  {
+    "id": 88,
+    "question": "科学发展观（  ）",
+    "options": {
+      "A": "创造性地回答了什么是社会主义、怎样建设社会主义",
+      "B": "创造性地建设什么样的党、怎样建设党的问题",
+      "C": "创造性地回答了新形势下实现什么样的发展、怎样发展等重大问题",
+      "D": "创造性地回答了新时代进行什么样的伟大革命、怎样进行伟大革命的问题"
+    },
+    "answer": "C",
+    "page": "261",
+    "explanation": "科学发展观创造性地回答了新形势下实现什么样的发展、怎样发展等重大问题。这是科学发展观对马克思主义发展理论的重要贡献。"
+  },
+  {
+    "id": 89,
+    "question": "坚持以人为本，最终是为了（  ）",
+    "options": {
+      "A": "实现社会主义现代化",
+      "B": "实现人的全面发展",
+      "C": "实现中华民族伟大复兴的中国梦",
+      "D": "实现持久和平、共同繁荣的和谐世界"
+    },
+    "answer": "B",
+    "page": "237",
+    "explanation": "坚持以人为本，最终是为了实现人的全面发展。人的全面发展是马克思主义的最高价值追求，也是科学发展观的最终目标。"
+  },
+  {
+    "id": 90,
+    "question": "在当代中国，坚持发展是硬道理的本质要求就是：",
+    "options": {
+      "A": "以人为本",
+      "B": "全面协调可持续",
+      "C": "统筹兼顾",
+      "D": "坚持科学发展"
+    },
+    "answer": "D",
+    "page": "230",
+    "explanation": "在当代中国，坚持发展是硬道理的本质要求就是坚持科学发展。科学发展观强调，发展必须是科学发展，必须坚持以人为本、全面协调可持续的发展。"
+  },
+  {
+    "id": 91,
+    "question": "最早提出\"马克思主义中国化\"这个命题的人是",
+    "options": {
+      "A": "李大钊",
+      "B": "陈独秀",
+      "C": "毛泽东",
+      "D": "刘少奇"
+    },
+    "answer": "C",
+    "explanation": "最早提出\"马克思主义中国化\"这个命题的是毛泽东。1938年，毛泽东在党的六届六中全会上作了《论新阶段》的报告，首次明确提出\"马克思主义中国化\"的命题。",
+    "page": "复习题"
+  },
+  {
+    "id": 92,
+    "question": "毛泽东思想在哪个时期走向成熟",
+    "options": {
+      "A": "土地革命战争",
+      "B": "抗日战争",
+      "C": "解放战争",
+      "D": "中华人民共和国成立后"
+    },
+    "answer": "B",
+    "explanation": "毛泽东思想在抗日战争时期走向成熟。这一时期，毛泽东发表了大量重要著作，系统阐述了中国革命的理论和策略，毛泽东思想得到系统总结和多方面展开而达到成熟。",
+    "page": "复习题"
+  },
+  {
+    "id": 93,
+    "question": "毛泽东思想在哪次会议上成为党的指导思想",
+    "options": {
+      "A": "党的七大",
+      "B": "八七会议",
+      "C": "遵义会议",
+      "D": "党的七大"
+    },
+    "answer": "D",
+    "explanation": "党的七大把毛泽东思想确立为党的指导思想并写入党章。1945年召开的党的七大，是党在新民主主义革命时期极其重要的一次大会，确立了毛泽东思想的指导地位。",
+    "page": "复习题"
+  },
+  {
+    "id": 94,
+    "question": "（）一声炮响，给中国送来了马克思列宁主义",
+    "options": {
+      "A": "法国大革命",
+      "B": "十月革命",
+      "C": "辛亥革命",
+      "D": "北伐战争"
+    },
+    "answer": "B",
+    "explanation": "\"十月革命一声炮响，给中国送来了马克思列宁主义。\"这是毛泽东的著名论断。1917年俄国十月革命的胜利，使中国的先进分子看到了新的希望，开始用马克思主义作为观察国家命运的工具。",
+    "page": "复习题"
+  },
+  {
+    "id": 95,
+    "question": "中国革命最基本的动力是",
+    "options": {
+      "A": "无产阶级",
+      "B": "农民阶级",
+      "C": "城市小资产阶级",
+      "D": "民族资产阶级"
+    },
+    "answer": "A",
+    "explanation": "无产阶级是中国革命最基本的动力。无产阶级是中国新的社会生产力的代表，是近代中国最进步的阶级，是中国革命的领导力量。",
+    "page": "复习题"
+  },
+  {
+    "id": 96,
+    "question": "中国革命的首要对象是",
+    "options": {
+      "A": "帝国主义",
+      "B": "封建主义",
+      "C": "官僚资本主义",
+      "D": "资本主义"
+    },
+    "answer": "A",
+    "explanation": "帝国主义是中国革命的首要对象。近代中国社会的主要矛盾是帝国主义和中华民族的矛盾、封建主义和人民大众的矛盾，其中帝国主义和中华民族的矛盾是最主要的矛盾。",
+    "page": "复习题"
+  },
+  {
+    "id": 97,
+    "question": "哪次会议确立了毛泽东在全党的实际领导地位",
+    "options": {
+      "A": "党的七大",
+      "B": "八七会议",
+      "C": "遵义会议",
+      "D": "党的七大"
+    },
+    "answer": "C",
+    "explanation": "遵义会议确立了毛泽东在全党的实际领导地位。1935年1月召开的遵义会议，结束了\"左\"倾教条主义错误在中央的统治，确立了以毛泽东为代表的新的中央领导。",
+    "page": "复习题"
+  },
+  {
+    "id": 98,
+    "question": "新民主主义社会是一个",
+    "options": {
+      "A": "独立的社会形态",
+      "B": "过渡性质的社会",
+      "C": "资本主义性质的社会",
+      "D": "社会主义性质的社会"
+    },
+    "answer": "B",
+    "explanation": "新民主主义社会是一个过渡性质的社会。从1949年新中国成立到1956年社会主义改造基本完成，是我国从新民主主义向社会主义过渡的时期。",
+    "page": "复习题"
+  },
+  {
+    "id": 99,
+    "question": "过渡时期总路线被概括为\"一化三改\"，其中\"一化\"是指",
+    "options": {
+      "A": "私营企业的国有化",
+      "B": "农业集体化",
+      "C": "手工艺合作化",
+      "D": "社会主义工业化"
+    },
+    "answer": "D",
+    "explanation": "过渡时期总路线被概括为\"一化三改\"，其中\"一化\"是指社会主义工业化。\"三改\"是指对个体农业、手工业和资本主义工商业的社会主义改造。",
+    "page": "复习题"
+  },
+  {
+    "id": 100,
+    "question": "毛泽东提出社会主义社会基本矛盾和两类矛盾学说的著作是",
+    "options": {
+      "A": "《关于正确处理人民内部矛盾的问题》",
+      "B": "《论十大关系》",
+      "C": "《新民主主义论》",
+      "D": "《论联合政府》"
+    },
+    "answer": "A",
+    "explanation": "毛泽东提出社会主义社会基本矛盾和两类矛盾学说的著作是《关于正确处理人民内部矛盾的问题》。这是1957年2月毛泽东在最高国务会议上的讲话。",
+    "page": "复习题"
+  },
+  {
+    "id": 101,
+    "question": "邓小平认为，在社会主义建设过程中，长期以来没有完全搞清楚的问题是",
+    "options": {
+      "A": "什么是社会主义，怎样建设社会主义",
+      "B": "什么是马克思主义",
+      "C": "什么是资本主义",
+      "D": "什么是共产主义"
+    },
+    "answer": "A",
+    "explanation": "邓小平认为，在社会主义建设过程中，长期以来没有完全搞清楚的问题是\"什么是社会主义，怎样建设社会主义\"。这是邓小平理论首要的基本理论问题。",
+    "page": "复习题"
+  },
+  {
+    "id": 102,
+    "question": "明确提出\"科学技术是第一生产力\"的是",
+    "options": {
+      "A": "毛泽东",
+      "B": "周恩来",
+      "C": "江泽民",
+      "D": "邓小平"
+    },
+    "answer": "D",
+    "explanation": "明确提出\"科学技术是第一生产力\"的是邓小平。1988年9月，邓小平在会见捷克斯洛伐克总统胡萨克时提出这一著名论断。",
+    "page": "复习题"
+  },
+  {
+    "id": 103,
+    "question": "我国进入社会主义社会的标志是",
+    "options": {
+      "A": "新中国的成立",
+      "B": "土地改革的完成",
+      "C": "1956年底社会主义改造基本完成",
+      "D": "一五计划的完成"
+    },
+    "answer": "C",
+    "explanation": "我国进入社会主义社会的标志是1956年底社会主义改造基本完成。三大改造的基本完成，标志着社会主义基本制度在我国初步确立。",
+    "page": "复习题"
+  },
+  {
+    "id": 104,
+    "question": "我国最大的实际是",
+    "options": {
+      "A": "人口众多",
+      "B": "资源短缺",
+      "C": "底子薄",
+      "D": "正处于并将长期处于社会主义初级阶段"
+    },
+    "answer": "D",
+    "explanation": "我国最大的实际是正处于并将长期处于社会主义初级阶段。这是党对我国基本国情的科学判断，是制定党的路线方针政策的根本依据。",
+    "page": "复习题"
+  },
+  {
+    "id": 105,
+    "question": "社会主义初级阶段的长期性，从根本上说是由中国进入和建成社会主义的（）决定的",
+    "options": {
+      "A": "历史条件",
+      "B": "社会状况",
+      "C": "历史条件和社会状况",
+      "D": "生产力水平"
+    },
+    "answer": "C",
+    "explanation": "社会主义初级阶段的长期性，从根本上说是由中国进入和建成社会主义的历史条件和社会状况决定的。我国的社会主义脱胎于半殖民地半封建社会，生产力水平远远落后于发达资本主义国家。",
+    "page": "复习题"
+  },
+  {
+    "id": 106,
+    "question": "十九大报告指出，当前我国社会的主要矛盾已经转化为",
+    "options": {
+      "A": "人民日益增长的物质文化需要同落后的社会生产之间的矛盾",
+      "B": "无产阶级和资产阶级的矛盾",
+      "C": "社会主义和资本主义的矛盾",
+      "D": "人民日益增长的美好生活需要和不平衡不充分的发展之间的矛盾"
+    },
+    "answer": "D",
+    "explanation": "十九大报告指出，当前我国社会的主要矛盾已经转化为人民日益增长的美好生活需要和不平衡不充分的发展之间的矛盾。这是党的十九大作出的重大政治判断。",
+    "page": "复习题"
+  },
+  {
+    "id": 107,
+    "question": "党在社会主义初级阶段的基本路线被概括为",
+    "options": {
+      "A": "一个中心",
+      "B": "两个基本点",
+      "C": "一个中心，两个基本点",
+      "D": "三个代表"
+    },
+    "answer": "C",
+    "explanation": "党在社会主义初级阶段的基本路线被概括为\"一个中心，两个基本点\"。即以经济建设为中心，坚持四项基本原则，坚持改革开放。",
+    "page": "复习题"
+  },
+  {
+    "id": 108,
+    "question": "首先提出\"建设有中国特色的社会主义\"命题的领导人是",
+    "options": {
+      "A": "毛泽东",
+      "B": "邓小平",
+      "C": "江泽民",
+      "D": "胡锦涛"
+    },
+    "answer": "B",
+    "explanation": "首先提出\"建设有中国特色的社会主义\"命题的领导人是邓小平。1982年9月，邓小平在党的十二大开幕词中明确提出这一命题。",
+    "page": "复习题"
+  },
+  {
+    "id": 109,
+    "question": "我国正式成为世界贸易组织成员国是在",
+    "options": {
+      "A": "1997年",
+      "B": "1999年",
+      "C": "2001年",
+      "D": "2003年"
+    },
+    "answer": "C",
+    "explanation": "我国正式成为世界贸易组织成员国是在2001年。2001年12月11日，中国正式加入世界贸易组织，成为其第143个成员。",
+    "page": "复习题"
+  },
+  {
+    "id": 110,
+    "question": "党的十一届三中全会后改革首先开始于",
+    "options": {
+      "A": "农村",
+      "B": "城市",
+      "C": "沿海",
+      "D": "内地"
+    },
+    "answer": "A",
+    "explanation": "党的十一届三中全会后改革首先开始于农村。安徽凤阳小岗村率先实行\"大包干\"，拉开了农村改革的序幕。",
+    "page": "复习题"
+  },
+  {
+    "id": 111,
+    "question": "我国经济体制改革的目标是",
+    "options": {
+      "A": "建立社会主义市场经济体制",
+      "B": "建立计划经济体制",
+      "C": "建立混合经济体制",
+      "D": "建立自由经济体制"
+    },
+    "answer": "A",
+    "explanation": "我国经济体制改革的目标是建立社会主义市场经济体制。1992年党的十四大明确提出这一目标。",
+    "page": "复习题"
+  },
+  {
+    "id": 112,
+    "question": "\"三个代表\"重要思想形成的时代背景的表述错误的是",
+    "options": {
+      "A": "国际局势和世界格局的深刻变化",
+      "B": "和平与发展成为时代主题",
+      "C": "经济全球化",
+      "D": "国际共产主义运动处于高潮"
+    },
+    "answer": "D",
+    "explanation": "\"三个代表\"重要思想形成的时代背景的表述错误的是\"国际共产主义运动处于高潮\"。实际上，当时国际共产主义运动处于低潮。",
+    "page": "复习题"
+  },
+  {
+    "id": 113,
+    "question": "江泽民首次对\"三个代表\"进行比较全面论述是在",
+    "options": {
+      "A": "1997年",
+      "B": "1998年",
+      "C": "1999年",
+      "D": "2000年"
+    },
+    "answer": "D",
+    "explanation": "江泽民首次对\"三个代表\"进行比较全面论述是在2000年。2000年2月，江泽民在广东考察工作时首次提出\"三个代表\"的重要思想。",
+    "page": "复习题"
+  },
+  {
+    "id": 114,
+    "question": "发展的第一动力是",
+    "options": {
+      "A": "创新",
+      "B": "改革",
+      "C": "开放",
+      "D": "稳定"
+    },
+    "answer": "A",
+    "explanation": "创新是发展的第一动力。党的十八届五中全会提出创新、协调、绿色、开放、共享的发展理念，创新被摆在国家发展全局的核心位置。",
+    "page": "复习题"
+  },
+  {
+    "id": 115,
+    "question": "社会主义的分配原则是",
+    "options": {
+      "A": "按劳分配",
+      "B": "按资分配",
+      "C": "按需分配",
+      "D": "按生产要素分配"
+    },
+    "answer": "A",
+    "explanation": "社会主义的分配原则是按劳分配。按劳分配是社会主义公有制经济中个人消费品分配的基本原则。",
+    "page": "复习题"
+  },
+  {
+    "id": 116,
+    "question": "人民民主专政是我国的",
+    "options": {
+      "A": "国体",
+      "B": "政体",
+      "C": "根本政治制度",
+      "D": "基本政治制度"
+    },
+    "answer": "A",
+    "explanation": "人民民主专政是我国的国体。国体是指国家的阶级性质，即社会各阶级在国家中的地位。",
+    "page": "复习题"
+  },
+  {
+    "id": 117,
+    "question": "中国特色的政党制度是",
+    "options": {
+      "A": "中国共产党领导的多党合作和政治协商制度",
+      "B": "多党制",
+      "C": "两党制",
+      "D": "一党制"
+    },
+    "answer": "A",
+    "explanation": "中国特色的政党制度是中国共产党领导的多党合作和政治协商制度。这是我国的一项基本政治制度。",
+    "page": "复习题"
+  },
+  {
+    "id": 118,
+    "question": "我国的政体是",
+    "options": {
+      "A": "人民民主专政",
+      "B": "人民代表大会制度",
+      "C": "民族区域自治制度",
+      "D": "基层群众自治制度"
+    },
+    "answer": "B",
+    "explanation": "我国的政体是人民代表大会制度。政体是指政权的组织形式，即统治阶级采取何种形式组织自己的政权机关。",
+    "page": "复习题"
+  },
+  {
+    "id": 119,
+    "question": "社会主义本质是",
+    "options": {
+      "A": "解放生产力",
+      "B": "发展生产力",
+      "C": "消灭剥削",
+      "D": "共同富裕"
+    },
+    "answer": "D",
+    "explanation": "社会主义本质是共同富裕。邓小平在1992年南方谈话中指出：\"社会主义的本质，是解放生产力，发展生产力，消灭剥削，消除两极分化，最终达到共同富裕。\"",
+    "page": "复习题"
+  },
+  {
+    "id": 120,
+    "question": "社会主义民主的本质和核心是",
+    "options": {
+      "A": "人民当家作主",
+      "B": "党的领导",
+      "C": "依法治国",
+      "D": "民主集中制"
+    },
+    "answer": "A",
+    "explanation": "社会主义民主的本质和核心是人民当家作主。人民当家作主是社会主义民主政治的本质和核心，是社会主义政治文明建设的根本出发点和归宿。",
+    "page": "复习题"
+  },
+  {
+    "id": 121,
+    "question": "\"百花齐放、百家争鸣\"是",
+    "options": {
+      "A": "新民主主义文化建设的方针",
+      "B": "社会主义文化建设的方针",
+      "C": "中国特色社会主义文化建设的基本方针",
+      "D": "资本主义文化建设的方针"
+    },
+    "answer": "C",
+    "explanation": "\"百花齐放、百家争鸣\"是中国特色社会主义文化建设的基本方针。这是毛泽东在1956年提出的促进科学文化繁荣发展的方针。",
+    "page": "复习题"
+  },
+  {
+    "id": 122,
+    "question": "中国特色社会主义最本质特征是",
+    "options": {
+      "A": "人民民主专政",
+      "B": "中国共产党领导",
+      "C": "社会主义制度",
+      "D": "公有制为主体"
+    },
+    "answer": "B",
+    "explanation": "中国特色社会主义最本质特征是中国共产党领导。这是习近平总书记的重要论断，深刻揭示了党的领导与中国特色社会主义之间的内在联系。",
+    "page": "复习题"
+  },
+  {
+    "id": 123,
+    "question": "中国特色社会主义的最大优势是",
+    "options": {
+      "A": "人民民主专政",
+      "B": "中国共产党领导",
+      "C": "社会主义制度",
+      "D": "公有制为主体"
+    },
+    "answer": "B",
+    "explanation": "中国特色社会主义的最大优势是中国共产党领导。党的领导是中国特色社会主义最本质的特征，也是中国特色社会主义制度的最大优势。",
+    "page": "复习题"
+  },
+  {
+    "id": 124,
+    "question": "邓小平理论在哪次会议上成为我们党的指导思想",
+    "options": {
+      "A": "党的十三大",
+      "B": "党的十四大",
+      "C": "党的十五大",
+      "D": "党的十六大"
+    },
+    "answer": "C",
+    "explanation": "邓小平理论在哪次会议上成为我们党的指导思想——党的十五大。1997年党的十五大正式使用\"邓小平理论\"这一概念，并将其确立为党的指导思想。",
+    "page": "复习题"
+  },
+  {
+    "id": 125,
+    "question": "科学发展观被作为党的指导思想写入党章是在",
+    "options": {
+      "A": "党的十五大",
+      "B": "党的十六大",
+      "C": "党的十七大",
+      "D": "党的十八大"
+    },
+    "answer": "D",
+    "explanation": "科学发展观被作为党的指导思想写入党章是在党的十八大。2012年党的十八大把科学发展观确立为党必须长期坚持的指导思想。",
+    "page": "复习题"
+  },
+  {
+    "id": 126,
+    "question": "2013年党的十八届三中全会明确提出要使市场在资源配置中起什么作用",
+    "options": {
+      "A": "基础性",
+      "B": "辅助性",
+      "C": "决定性",
+      "D": "主导性"
+    },
+    "answer": "C",
+    "explanation": "2013年党的十八届三中全会明确提出要使市场在资源配置中起决定性作用。这是对市场作用认识的重大突破。",
+    "page": "复习题"
+  },
+  {
+    "id": 127,
+    "question": "新民主主义革命所要建立的国家的政体是",
+    "options": {
+      "A": "总统制",
+      "B": "议会制",
+      "C": "君主立宪制",
+      "D": "人民代表大会制"
+    },
+    "answer": "D",
+    "explanation": "新民主主义革命所要建立的国家的政体是人民代表大会制。这是我国的根本政治制度。",
+    "page": "复习题"
+  },
+  {
+    "id": 128,
+    "question": "中国革命的主要形式是",
+    "options": {
+      "A": "议会斗争",
+      "B": "合法斗争",
+      "C": "武装斗争",
+      "D": "群众运动"
+    },
+    "answer": "C",
+    "explanation": "中国革命的主要形式是武装斗争。毛泽东指出：\"在中国，离开了武装斗争，就没有无产阶级的地位，就没有人民的地位，就没有共产党的地位。\"",
+    "page": "复习题"
+  },
+  {
+    "id": 129,
+    "question": "中国共产党领导下的人民军队的唯一宗旨是",
+    "options": {
+      "A": "保卫祖国",
+      "B": "为人民服务",
+      "C": "听党指挥",
+      "D": "能打胜仗"
+    },
+    "answer": "B",
+    "explanation": "中国共产党领导下的人民军队的唯一宗旨是为人民服务。这是毛泽东在《论联合政府》中明确提出的。",
+    "page": "复习题"
+  },
+  {
+    "id": 130,
+    "question": "\"三个代表\"重要思想在哪次会议上被写入党章成为党的指导思想",
+    "options": {
+      "A": "党的十四大",
+      "B": "党的十五大",
+      "C": "党的十六大",
+      "D": "党的十七大"
+    },
+    "answer": "C",
+    "explanation": "\"三个代表\"重要思想在哪次会议上被写入党章成为党的指导思想——党的十六大。2002年党的十六大把\"三个代表\"重要思想确立为党的指导思想。",
+    "page": "复习题"
+  },
+  {
+    "id": 131,
+    "question": "中共七大上对\"马克思主义中国化\"从理论上作出进一步阐述的领导人是",
+    "options": {
+      "A": "毛泽东",
+      "B": "刘少奇",
+      "C": "周恩来",
+      "D": "朱德"
+    },
+    "answer": "B",
+    "explanation": "中共七大上对\"马克思主义中国化\"从理论上作出进一步阐述的领导人是刘少奇。刘少奇在七大上作了《关于修改党章的报告》，对毛泽东思想作了科学概括和系统阐述。",
+    "page": "复习题"
+  },
+  {
+    "id": 132,
+    "question": "毛泽东思想达到成熟的主要标志是创立了",
+    "options": {
+      "A": "社会主义革命理论",
+      "B": "新民主主义革命理论",
+      "C": "社会主义建设理论",
+      "D": "人民民主专政理论"
+    },
+    "answer": "B",
+    "explanation": "毛泽东思想达到成熟的主要标志是创立了新民主主义革命理论。这一理论系统阐述了中国革命的性质、对象、任务、动力、领导力量和前途等问题。",
+    "page": "复习题"
+  },
+  {
+    "id": 133,
+    "question": "新民主主义共和国是",
+    "options": {
+      "A": "资产阶级专政",
+      "B": "无产阶级专政",
+      "C": "各革命阶级联合专政",
+      "D": "农民阶级专政"
+    },
+    "answer": "C",
+    "explanation": "新民主主义共和国是各革命阶级联合专政。这是毛泽东在《新民主主义论》中提出的重要思想。",
+    "page": "复习题"
+  },
+  {
+    "id": 134,
+    "question": "下列著作哪一项不是毛泽东的",
+    "options": {
+      "A": "《实践论》",
+      "B": "《解放思想，实事求是、团结一致向前看》",
+      "C": "《矛盾论》",
+      "D": "《论持久战》"
+    },
+    "answer": "B",
+    "explanation": "下列著作哪一项不是毛泽东的——《解放思想，实事求是、团结一致向前看》。这是邓小平在1978年12月中央工作会议上的讲话。",
+    "page": "复习题"
+  },
+  {
+    "id": 135,
+    "question": "新民主主义革命的开端是",
+    "options": {
+      "A": "辛亥革命",
+      "B": "新文化运动",
+      "C": "五四运动",
+      "D": "中国共产党成立"
+    },
+    "answer": "C",
+    "explanation": "新民主主义革命的开端是五四运动。1919年五四运动标志着中国新民主主义革命的开端。",
+    "page": "复习题"
+  },
+  {
+    "id": 136,
+    "question": "毛泽东认为，认清和解决革命问题的基本的根据，是认清",
+    "options": {
+      "A": "中国的国情",
+      "B": "中国的敌人",
+      "C": "中国的朋友",
+      "D": "中国的前途"
+    },
+    "answer": "A",
+    "explanation": "毛泽东认为，认清和解决革命问题的基本的根据，是认清中国的国情。毛泽东指出：\"认清中国社会的性质，就是说，认清中国的国情，乃是认清一切革命问题的基本的根据。\"",
+    "page": "复习题"
+  },
+  {
+    "id": 137,
+    "question": "半殖民地半封建中国社会的矛盾是错综复杂的，其中最主要的矛盾是",
+    "options": {
+      "A": "封建主义和人民大众的矛盾",
+      "B": "地主阶级和农民阶级的矛盾",
+      "C": "帝国主义和中华民族的矛盾",
+      "D": "资产阶级和无产阶级的矛盾"
+    },
+    "answer": "C",
+    "explanation": "半殖民地半封建中国社会的矛盾是错综复杂的，其中最主要的矛盾是帝国主义和中华民族的矛盾。这是近代中国社会最主要的矛盾。",
+    "page": "复习题"
+  },
+  {
+    "id": 138,
+    "question": "新民主主义社会的主要矛盾是",
+    "options": {
+      "A": "农民阶级和地主阶级的矛盾",
+      "B": "帝国主义和中华民族的矛盾",
+      "C": "工人阶级同资产阶级的矛盾",
+      "D": "人民日益增长的物质文化需要同落后的社会生产之间的矛盾"
+    },
+    "answer": "C",
+    "explanation": "新民主主义社会的主要矛盾是工人阶级同资产阶级的矛盾。这是新民主主义社会向社会主义社会过渡时期的主要矛盾。",
+    "page": "复习题"
+  },
+  {
+    "id": 139,
+    "question": "1953年，毛泽东和中共中央提出了加快从新民主主义社会向社会主义社会转变的",
+    "options": {
+      "A": "社会主义建设总路线",
+      "B": "过渡时期的总路线",
+      "C": "社会主义改造总路线",
+      "D": "社会主义革命总路线"
+    },
+    "answer": "B",
+    "explanation": "1953年，毛泽东和中共中央提出了加快从新民主主义社会向社会主义社会转变的过渡时期的总路线。这条总路线被概括为\"一化三改\"。",
+    "page": "复习题"
+  },
+  {
+    "id": 140,
+    "question": "毛泽东提出关于社会主义社会基本矛盾学说的著作是",
+    "options": {
+      "A": "《论十大关系》",
+      "B": "《关于正确处理人民内部矛盾的问题》",
+      "C": "《新民主主义论》",
+      "D": "《论联合政府》"
+    },
+    "answer": "B",
+    "explanation": "毛泽东提出关于社会主义社会基本矛盾学说的著作是《关于正确处理人民内部矛盾的问题》。这是毛泽东在1957年2月发表的重要讲话。",
+    "page": "复习题"
+  },
+  {
+    "id": 141,
+    "question": "邓小平完整地提出社会主义本质理论是在",
+    "options": {
+      "A": "1987年",
+      "B": "1988年",
+      "C": "1991年",
+      "D": "1992年南方谈话中"
+    },
+    "answer": "D",
+    "explanation": "邓小平完整地提出社会主义本质理论是在1992年南方谈话中。邓小平指出：\"社会主义的本质，是解放生产力，发展生产力，消灭剥削，消除两极分化，最终达到共同富裕。\"",
+    "page": "复习题"
+  },
+  {
+    "id": 142,
+    "question": "党的（）把\"三步走\"的发展战略构想确定下来",
+    "options": {
+      "A": "十二大",
+      "B": "十三大",
+      "C": "十四大",
+      "D": "十五大"
+    },
+    "answer": "B",
+    "explanation": "党的十三大把\"三步走\"的发展战略构想确定下来。1987年党的十三大正式制定了社会主义现代化建设\"三步走\"的发展战略。",
+    "page": "复习题"
+  },
+  {
+    "id": 143,
+    "question": "我们讲从实际出发，最大的实际是中国",
+    "options": {
+      "A": "人口众多",
+      "B": "资源短缺",
+      "C": "底子薄",
+      "D": "正处于并将长期处于社会主义初级阶段"
+    },
+    "answer": "D",
+    "explanation": "我们讲从实际出发，最大的实际是中国正处于并将长期处于社会主义初级阶段。这是党对我国基本国情的科学判断。",
+    "page": "复习题"
+  },
+  {
+    "id": 144,
+    "question": "毛泽东在20世纪50年代末60年代初曾设想社会主义社会可能分为",
+    "options": {
+      "A": "不发达的社会主义阶段和比较发达的社会主义阶段",
+      "B": "社会主义初级阶段和高级阶段",
+      "C": "社会主义过渡阶段和建设阶段",
+      "D": "社会主义改造阶段和建设阶段"
+    },
+    "answer": "A",
+    "explanation": "毛泽东在20世纪50年代末60年代初曾设想社会主义社会可能分为不发达的社会主义阶段和比较发达的社会主义阶段。这一思想为后来社会主义初级阶段理论提供了重要启示。",
+    "page": "复习题"
+  },
+  {
+    "id": 145,
+    "question": "1978年以来我国改革的性质是",
+    "options": {
+      "A": "社会主义制度的自我完善和发展",
+      "B": "社会主义制度的根本变革",
+      "C": "资本主义制度的复辟",
+      "D": "封建制度的残余"
+    },
+    "answer": "A",
+    "explanation": "1978年以来我国改革的性质是社会主义制度的自我完善和发展。改革不是要改变社会主义制度，而是社会主义制度的自我完善和发展。",
+    "page": "复习题"
+  },
+  {
+    "id": 146,
+    "question": "\"改革是中国的又一次革命\"是指",
+    "options": {
+      "A": "改革是社会主义制度的根本变革",
+      "B": "改革是资本主义制度的复辟",
+      "C": "改革是社会主义社会发展的直接动力",
+      "D": "改革是封建制度的残余"
+    },
+    "answer": "C",
+    "explanation": "\"改革是中国的又一次革命\"是指改革是社会主义社会发展的直接动力。改革是中国的第二次革命，是社会主义制度的自我完善和发展。",
+    "page": "复习题"
+  },
+  {
+    "id": 147,
+    "question": "毛泽东思想形成和发展的时代主题是",
+    "options": {
+      "A": "战争与革命",
+      "B": "和平与发展",
+      "C": "合作与共赢",
+      "D": "开放与融通"
+    },
+    "answer": "A",
+    "explanation": "毛泽东思想形成和发展的时代主题是战争与革命。20世纪上半叶，帝国主义战争和无产阶级革命是时代主题。",
+    "page": "复习题"
+  },
+  {
+    "id": 148,
+    "question": "中共十一届三中全会以后，对毛泽东和毛泽东思想的历史地位作出科学评价的历史文献是",
+    "options": {
+      "A": "《论十大关系》",
+      "B": "《关于建国以来党的若干历史问题的决议》",
+      "C": "《新民主主义论》",
+      "D": "《论联合政府》"
+    },
+    "answer": "B",
+    "explanation": "中共十一届三中全会以后，对毛泽东和毛泽东思想的历史地位作出科学评价的历史文献是《关于建国以来党的若干历史问题的决议》。这是1981年党的十一届六中全会通过的。",
+    "page": "复习题"
+  },
+  {
+    "id": 149,
+    "question": "为了指导和带领全党恢复毛泽东倡导的实事求是的思想路线，邓小平率先抵制和批评的错误方针是",
+    "options": {
+      "A": "以阶级斗争为纲",
+      "B": "无产阶级专政下继续革命",
+      "C": "\"两个凡是\"",
+      "D": "大跃进"
+    },
+    "answer": "C",
+    "explanation": "为了指导和带领全党恢复毛泽东倡导的实事求是的思想路线，邓小平率先抵制和批评的错误方针是\"两个凡是\"。邓小平提出要完整准确地理解毛泽东思想。",
+    "page": "复习题"
+  },
+  {
+    "id": 150,
+    "question": "我党实事求是思想路线的重新确立者是",
+    "options": {
+      "A": "毛泽东",
+      "B": "周恩来",
+      "C": "邓小平",
+      "D": "江泽民"
+    },
+    "answer": "C",
+    "explanation": "我党实事求是思想路线的重新确立者是邓小平。邓小平在1978年领导和支持了关于实践是检验真理唯一标准的大讨论，重新确立了实事求是的思想路线。",
+    "page": "复习题"
+  },
+  {
+    "id": 151,
+    "question": "党对农业的社会主义改造采取了循序渐进的步骤，逐步实现过渡，其中第二步是组织",
+    "options": {
+      "A": "互助组",
+      "B": "高级社",
+      "C": "初级合作社",
+      "D": "人民公社"
+    },
+    "answer": "C",
+    "explanation": "党对农业的社会主义改造采取了循序渐进的步骤，逐步实现过渡，其中第二步是组织初级合作社。第一步是互助组，第三步是高级社。",
+    "page": "复习题"
+  },
+  {
+    "id": 152,
+    "question": "在社会主义思想发展史上，最早提到社会主义发展阶段问题的是",
+    "options": {
+      "A": "马克思",
+      "B": "恩格斯",
+      "C": "列宁",
+      "D": "斯大林"
+    },
+    "answer": "C",
+    "explanation": "在社会主义思想发展史上，最早提到社会主义发展阶段问题的是列宁。列宁曾提出\"初级形式的社会主义\"等概念。",
+    "page": "复习题"
+  },
+  {
+    "id": 153,
+    "question": "我国将长期处于社会主义初级阶段，这一科学论断得出的依据是",
+    "options": {
+      "A": "马克思主义基本原理",
+      "B": "社会主义建设的经验",
+      "C": "中国的具体实际",
+      "D": "国际共产主义运动的经验"
+    },
+    "answer": "C",
+    "explanation": "我国将长期处于社会主义初级阶段，这一科学论断得出的依据是中国的具体实际。我国的社会主义脱胎于半殖民地半封建社会，生产力水平远远落后于发达资本主义国家。",
+    "page": "复习题"
+  },
+  {
+    "id": 154,
+    "question": "把建立市场经济体制确立为经济体制改革目标的党的代表大会是",
+    "options": {
+      "A": "十二大",
+      "B": "十三大",
+      "C": "十四大",
+      "D": "十五大"
+    },
+    "answer": "C",
+    "explanation": "把建立市场经济体制确立为经济体制改革目标的党的代表大会是十四大。1992年党的十四大明确提出我国经济体制改革的目标是建立社会主义市场经济体制。",
+    "page": "复习题"
+  },
+  {
+    "id": 155,
+    "question": "社会主义初级阶段个人收入分配制度的主体是",
+    "options": {
+      "A": "按劳分配",
+      "B": "按资分配",
+      "C": "按需分配",
+      "D": "按生产要素分配"
+    },
+    "answer": "A",
+    "explanation": "社会主义初级阶段个人收入分配制度的主体是按劳分配。按劳分配是社会主义公有制经济中个人消费品分配的基本原则。",
+    "page": "复习题"
+  },
+  {
+    "id": 156,
+    "question": "首次把依法治国确立为党治理国家的基本方略的会议是",
+    "options": {
+      "A": "十三大",
+      "B": "十四大",
+      "C": "十五大",
+      "D": "十六大"
+    },
+    "answer": "C",
+    "explanation": "首次把依法治国确立为党治理国家的基本方略的会议是十五大。1997年党的十五大明确提出依法治国的基本方略。",
+    "page": "复习题"
+  },
+  {
+    "id": 157,
+    "question": "社会主义初级阶段基本经济制度是",
+    "options": {
+      "A": "公有制",
+      "B": "公有制为主体，多种所有制经济共同发展",
+      "C": "私有制",
+      "D": "混合所有制"
+    },
+    "answer": "B",
+    "explanation": "社会主义初级阶段基本经济制度是公有制为主体，多种所有制经济共同发展。这是由社会主义性质和初级阶段的国情决定的。",
+    "page": "复习题"
+  },
+  {
+    "id": 158,
+    "question": "\"没有毛主席、至少我们中国人民还要在黑暗中摸索更长的时间\"，提出这个评价的是",
+    "options": {
+      "A": "邓小平",
+      "B": "周恩来",
+      "C": "刘少奇",
+      "D": "朱德"
+    },
+    "answer": "A",
+    "explanation": "\"没有毛主席、至少我们中国人民还要在黑暗中摸索更长的时间\"，提出这个评价的是邓小平。这是邓小平对毛泽东历史地位的科学评价。",
+    "page": "复习题"
+  },
+  {
+    "id": 159,
+    "question": "我国对资本主义工商业进行社会主义改造的高级形式是",
+    "options": {
+      "A": "加工订货",
+      "B": "统购包销",
+      "C": "经销代销",
+      "D": "个别企业公私合营和全行业公私合营"
+    },
+    "answer": "D",
+    "explanation": "我国对资本主义工商业进行社会主义改造的高级形式是个别企业公私合营和全行业公私合营。这是通过国家资本主义形式实现的。",
+    "page": "复习题"
+  },
+  {
+    "id": 160,
+    "question": "公有制为主体，多种所有制经济共同发展，是我国社会主义初级阶段的一项基本经济制度，它是由",
+    "options": {
+      "A": "生产力发展状况决定的",
+      "B": "社会主义性质决定的",
+      "C": "初级阶段的国情决定的",
+      "D": "社会主义性质和初级阶段的国情决定的"
+    },
+    "answer": "D",
+    "explanation": "公有制为主体，多种所有制经济共同发展，是我国社会主义初级阶段的一项基本经济制度，它是由社会主义性质和初级阶段的国情决定的。",
+    "page": "复习题"
+  },
+  {
+    "id": 161,
+    "question": "社会主义社会实行按劳分配的经济基础是",
+    "options": {
+      "A": "社会主义生产资料的公有制",
+      "B": "社会主义生产力水平",
+      "C": "社会主义社会的性质",
+      "D": "社会主义社会的矛盾"
+    },
+    "answer": "A",
+    "explanation": "社会主义社会实行按劳分配的经济基础是社会主义生产资料的公有制。按劳分配是社会主义公有制经济中个人消费品分配的基本原则。",
+    "page": "复习题"
+  },
+  {
+    "id": 162,
+    "question": "中国共产党首次提出\"科学发展观\"是在",
+    "options": {
+      "A": "党的十四大",
+      "B": "党的十五大",
+      "C": "党的十六大",
+      "D": "党的十七大"
+    },
+    "answer": "C",
+    "explanation": "中国共产党首次提出\"科学发展观\"是在党的十六大。2003年党的十六届三中全会正式提出科学发展观。",
+    "page": "复习题"
+  },
+  {
+    "id": 163,
+    "question": "邓小平在中央十二大开幕词中",
+    "options": {
+      "A": "提出了社会主义初级阶段理论",
+      "B": "提出了社会主义本质理论",
+      "C": "提出了社会主义市场经济理论",
+      "D": "明确提出了建设有中国特色社会主义的命题"
+    },
+    "answer": "D",
+    "explanation": "邓小平在中央十二大开幕词中明确提出了建设有中国特色社会主义的命题。这是邓小平理论的核心命题。",
+    "page": "复习题"
+  },
+  {
+    "id": 164,
+    "question": "中国新民主主义革命的领导力量是",
+    "options": {
+      "A": "农民阶级",
+      "B": "城市小资产阶级",
+      "C": "无产阶级",
+      "D": "民族资产阶级"
+    },
+    "answer": "C",
+    "explanation": "中国新民主主义革命的领导力量是无产阶级。无产阶级的领导权是中国革命的中心问题，也是新民主主义革命理论的核心问题。",
+    "page": "复习题"
+  },
+  {
+    "id": 165,
+    "question": "中国革命的首要问题是",
+    "options": {
+      "A": "分清敌友问题",
+      "B": "无产阶级领导权问题",
+      "C": "农民问题",
+      "D": "武装斗争问题"
+    },
+    "answer": "A",
+    "explanation": "中国革命的首要问题是分清敌友问题。毛泽东指出：\"谁是我们的敌人？谁是我们的朋友？这个问题是革命的首要问题。\"",
+    "page": "复习题"
+  },
+  {
+    "id": 166,
+    "question": "中国革命的中心问题，也是新民主主义革命的核心问题的是",
+    "options": {
+      "A": "农民问题",
+      "B": "无产阶级领导权问题",
+      "C": "武装斗争问题",
+      "D": "统一战线问题"
+    },
+    "answer": "B",
+    "explanation": "中国革命的中心问题，也是新民主主义革命的核心问题的是无产阶级领导权问题。新民主主义革命与旧民主主义革命的根本区别就在于领导权不同。",
+    "page": "复习题"
+  },
+  {
+    "id": 167,
+    "question": "在对资本主义工商业的社会主义改造中，在利润分配上采取的政策是",
+    "options": {
+      "A": "定息",
+      "B": "没收",
+      "C": "赎买",
+      "D": "四马分肥"
+    },
+    "answer": "D",
+    "explanation": "在对资本主义工商业的社会主义改造中，在利润分配上采取的政策是四马分肥。\"四马分肥\"是指国家所得税、企业公积金、工人福利费、资方红利四个方面。",
+    "page": "复习题"
+  },
+  {
+    "id": 168,
+    "question": "在我国剥削制度被消灭的标志是",
+    "options": {
+      "A": "新中国的成立",
+      "B": "土地改革的完成",
+      "C": "三大改造的基本完成",
+      "D": "一五计划的完成"
+    },
+    "answer": "C",
+    "explanation": "在我国剥削制度被消灭的标志是三大改造的基本完成。1956年底，对农业、手工业和资本主义工商业的社会主义改造基本完成，标志着剥削制度的消灭。",
+    "page": "复习题"
+  },
+  {
+    "id": 169,
+    "question": "党在过渡时期总路线的主要内容被概括为\"一化三改\"，其中\"一化\"是指逐步实现国家的社会主义",
+    "options": {
+      "A": "工业化",
+      "B": "农业集体化",
+      "C": "手工业合作化",
+      "D": "资本主义工商业国有化"
+    },
+    "answer": "A",
+    "explanation": "党在过渡时期总路线的主要内容被概括为\"一化三改\"，其中\"一化\"是指逐步实现国家的社会主义工业化。这是过渡时期总路线的主体。",
+    "page": "复习题"
+  },
+  {
+    "id": 170,
+    "question": "社会主义改造的基本完成，标志着社会主义基本制度在中国的确立，这一基本制度的确立，为当代中国的一切发展进步奠定了",
+    "options": {
+      "A": "经济基础",
+      "B": "政治基础",
+      "C": "文化基础",
+      "D": "制度基础"
+    },
+    "answer": "D",
+    "explanation": "社会主义改造的基本完成，标志着社会主义基本制度在中国的确立，这一基本制度的确立，为当代中国的一切发展进步奠定了制度基础。",
+    "page": "复习题"
+  },
+  {
+    "id": 171,
+    "question": "认清国情，是认清和解决革命问题的基本依据，近代中国最基本的国情是",
+    "options": {
+      "A": "封建社会",
+      "B": "中国沦为半殖民地半封建社会",
+      "C": "资本主义社会",
+      "D": "社会主义社会"
+    },
+    "answer": "B",
+    "explanation": "认清国情，是认清和解决革命问题的基本依据，近代中国最基本的国情是中国沦为半殖民地半封建社会。这一国情决定了中国革命的性质和任务。",
+    "page": "复习题"
+  },
+  {
+    "id": 172,
+    "question": "从1949年到1952年，党的主要任务是",
+    "options": {
+      "A": "进行社会主义改造",
+      "B": "进行社会主义建设",
+      "C": "恢复国民经济，继续完成民主革命遗留的任务",
+      "D": "进行土地改革"
+    },
+    "answer": "C",
+    "explanation": "从1949年到1952年，党的主要任务是恢复国民经济，继续完成民主革命遗留的任务。这一时期进行了土地改革、镇压反革命等运动。",
+    "page": "复习题"
+  },
+  {
+    "id": 173,
+    "question": "1953年到1956年，中国国内的主要矛盾是",
+    "options": {
+      "A": "农民阶级和地主阶级的矛盾",
+      "B": "工人阶级同资产阶级的矛盾",
+      "C": "人民日益增长的物质文化需要同落后的社会生产之间的矛盾",
+      "D": "帝国主义和中华民族的矛盾"
+    },
+    "answer": "B",
+    "explanation": "1953年到1956年，中国国内的主要矛盾是工人阶级同资产阶级的矛盾。这是社会主义改造时期的主要矛盾。",
+    "page": "复习题"
+  },
+  {
+    "id": 174,
+    "question": "我国社会主义改造完成之后，占统治地位的经济形式是",
+    "options": {
+      "A": "私有制经济",
+      "B": "公有制经济",
+      "C": "混合所有制经济",
+      "D": "外资经济"
+    },
+    "answer": "B",
+    "explanation": "我国社会主义改造完成之后，占统治地位的经济形式是公有制经济。1956年社会主义改造基本完成后，公有制经济成为国民经济的主体。",
+    "page": "复习题"
+  },
+  {
+    "id": 175,
+    "question": "新民主主义社会是",
+    "options": {
+      "A": "独立的社会形态",
+      "B": "过渡性的社会",
+      "C": "资本主义性质的社会",
+      "D": "社会主义性质的社会"
+    },
+    "answer": "B",
+    "explanation": "新民主主义社会是过渡性的社会。从1949年新中国成立到1956年社会主义改造基本完成，是我国从新民主主义向社会主义过渡的时期。",
+    "page": "复习题"
+  },
+  {
+    "id": 176,
+    "question": "《论十大关系》报告确定的一个基本方针是",
+    "options": {
+      "A": "以阶级斗争为纲",
+      "B": "努力把党内党外，国内国外的一切积极的因素，直接的，间接的积极因素全部调动起来，为社会主义建设服务",
+      "C": "以经济建设为中心",
+      "D": "以钢为纲"
+    },
+    "answer": "B",
+    "explanation": "《论十大关系》报告确定的一个基本方针是努力把党内党外，国内国外的一切积极的因素，直接的，间接的积极因素全部调动起来，为社会主义建设服务。",
+    "page": "复习题"
+  },
+  {
+    "id": 177,
+    "question": "毛泽东提出的社会主义现代化的战略目标是",
+    "options": {
+      "A": "实现四个现代化",
+      "B": "把我国建设成为社会主义强国",
+      "C": "把我国建设成为发达国家",
+      "D": "把我国建设成为一个具有现代农业，现代工业，现代国防和现代科学技术的强国"
+    },
+    "answer": "D",
+    "explanation": "毛泽东提出的社会主义现代化的战略目标是把我国建设成为一个具有现代农业，现代工业，现代国防和现代科学技术的强国。这是\"四个现代化\"的最早表述。",
+    "page": "复习题"
+  },
+  {
+    "id": 178,
+    "question": "系统论述社会主义社会矛盾理论的报告是",
+    "options": {
+      "A": "《论十大关系》",
+      "B": "《新民主主义论》",
+      "C": "《关于正确处理人民内部矛盾的问题》",
+      "D": "《论联合政府》"
+    },
+    "answer": "C",
+    "explanation": "系统论述社会主义社会矛盾理论的报告是《关于正确处理人民内部矛盾的问题》。这是毛泽东在1957年2月发表的重要讲话。",
+    "page": "复习题"
+  },
+  {
+    "id": 179,
+    "question": "党的八大提出我国国内的主要矛盾是",
+    "options": {
+      "A": "无产阶级和资产阶级的矛盾",
+      "B": "社会主义和资本主义的矛盾",
+      "C": "人民内部矛盾",
+      "D": "人民对于经济文化迅速发展的需要同当时经济文化不能满足人民需要的状况之间的矛盾"
+    },
+    "answer": "D",
+    "explanation": "党的八大提出我国国内的主要矛盾是人民对于经济文化迅速发展的需要同当时经济文化不能满足人民需要的状况之间的矛盾。这是对社会主义社会主要矛盾的正确认识。",
+    "page": "复习题"
+  },
+  {
+    "id": 180,
+    "question": "对科学文化领域的矛盾，毛泽东提出实行的方针是",
+    "options": {
+      "A": "百花齐放",
+      "B": "百花齐放，百家争鸣",
+      "C": "百家争鸣",
+      "D": "古为今用"
+    },
+    "answer": "B",
+    "explanation": "对科学文化领域的矛盾，毛泽东提出实行的方针是百花齐放，百家争鸣。这是促进科学文化繁荣发展的正确方针。",
+    "page": "复习题"
+  }
+];
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBookmarks();
+            questions = questionsData;
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    selectedMode = this.dataset.mode;
+                });
+            });
+            document.getElementById('show-answer').addEventListener('change', function() {
+                showExplanation = this.checked;
+            });
+        });
+        
+        function startQuiz() {
+            if (selectedMode === 'browse') {
+                startBrowseMode();
+                return;
+            }
+            if (selectedMode === 'all') {
+                currentQuestions = [...questions];
+            } else if (selectedMode === 'random') {
+                currentQuestions = shuffleArray([...questions]).slice(0, 20);
+            } else if (selectedMode === 'bookmarked') {
+                loadBookmarks();
+                currentQuestions = questions.filter(q => bookmarkedQuestions.includes(q.id));
+                if (currentQuestions.length === 0) {
+                    alert('没有收藏题目，请先收藏一些题目');
+                    return;
+                }
+            } else if (selectedMode === 'wrong') {
+                const savedWrong = localStorage.getItem('maogai_wrong');
+                if (savedWrong) {
+                    wrongQuestions = JSON.parse(savedWrong);
+                    currentQuestions = questions.filter(q => wrongQuestions.includes(q.id));
+                }
+                if (currentQuestions.length === 0) {
+                    alert('没有错题记录，请先完成一次练习');
+                    return;
+                }
+            }
+            currentIndex = 0;
+            correctCount = 0;
+            wrongCount = 0;
+            answers = {};
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('total-num').textContent = currentQuestions.length;
+            showQuestion();
+        }
+        
+        function showQuestion() {
+            const q = currentQuestions[currentIndex];
+            updateBookmarkState();
+            const progress = ((currentIndex + 1) / currentQuestions.length) * 100;
+            document.getElementById('progress').style.width = progress + '%';
+            document.getElementById('current-num').textContent = currentIndex + 1;
+            document.getElementById('correct-num').textContent = correctCount;
+            document.getElementById('wrong-num').textContent = wrongCount;
+            document.getElementById('q-number').textContent = `第 ${currentIndex + 1} 题`;
+            document.getElementById('q-text').textContent = q.question;
+            
+            const optionsContainer = document.getElementById('q-options');
+            optionsContainer.innerHTML = '';
+            
+            ['A', 'B', 'C', 'D'].forEach(key => {
+                if (q.options[key]) {
+                    const option = document.createElement('div');
+                    option.className = 'option';
+                    option.dataset.key = key;
+                    option.innerHTML = `<span class="option-label">${key}.</span>${q.options[key]}`;
+                    
+                    if (answers[q.id]) {
+                        if (answers[q.id].correct) {
+                            // If answered correctly, show correct state
+                            option.classList.add('disabled');
+                            if (key === answers[q.id].selected) {
+                                option.classList.add('correct');
+                            }
+                        } else {
+                            // If answered wrong, allow retry
+                            if (key === answers[q.id].selected) {
+                                option.classList.add('wrong');
+                            }
+                            if (key === q.answer) {
+                                option.classList.add('show-correct');
+                            }
+                            // Allow clicking to retry
+                            option.addEventListener('click', () => retrySelectOption(key));
+                        }
+                    } else {
+                        option.addEventListener('click', () => selectOption(key));
+                    }
+                    optionsContainer.appendChild(option);
+                }
+            });
+            
+            const feedback = document.getElementById('feedback');
+            const explanation = document.getElementById('explanation');
+            const retryBtn = document.getElementById('retry-btn');
+            
+            if (answers[q.id]) {
+                if (answers[q.id].correct) {
+                    feedback.className = 'feedback correct';
+                    feedback.innerHTML = '<strong>✓ 回答正确！</strong>';
+                    retryBtn.classList.add('hidden');
+                } else {
+                    feedback.className = 'feedback wrong';
+                    feedback.innerHTML = `<strong>✗ 回答错误！</strong> 正确答案是 <strong>${q.answer}</strong><br>点击其他选项或点击下方按钮重新选择`;
+                    retryBtn.classList.remove('hidden');
+                }
+                if (showExplanation && q.explanation) {
+                    explanation.classList.remove('hidden');
+                    document.getElementById('explanation-text').textContent = q.explanation;
+                } else {
+                    explanation.classList.add('hidden');
+                }
+            } else {
+                feedback.className = 'feedback';
+                feedback.style.display = 'none';
+                explanation.classList.add('hidden');
+                retryBtn.classList.add('hidden');
+            }
+            
+            document.getElementById('prev-btn').disabled = currentIndex === 0;
+            document.getElementById('next-btn').textContent = 
+                currentIndex === currentQuestions.length - 1 ? '查看结果' : '下一题';
+        }
+        
+        function selectOption(key) {
+            const q = currentQuestions[currentIndex];
+            if (answers[q.id]) return;
+            
+            const isCorrect = key === q.answer;
+            answers[q.id] = { selected: key, correct: isCorrect };
+            
+            if (isCorrect) {
+                correctCount++;
+            } else {
+                wrongCount++;
+                if (!wrongQuestions.includes(q.id)) {
+                    wrongQuestions.push(q.id);
+                    localStorage.setItem('maogai_wrong', JSON.stringify(wrongQuestions));
+                }
+            }
+            showQuestion();
+        }
+        
+        function retrySelectOption(key) {
+            const q = currentQuestions[currentIndex];
+            if (!answers[q.id] || answers[q.id].correct) return;
+            
+            // Remove previous wrong answer count if this is a retry
+            const wasWrong = !answers[q.id].correct;
+            
+            const isCorrect = key === q.answer;
+            answers[q.id] = { selected: key, correct: isCorrect };
+            
+            if (isCorrect) {
+                // If now correct, increment correct count and decrement wrong count
+                correctCount++;
+                if (wasWrong) wrongCount--;
+            }
+            // If still wrong, keep the wrong count
+            
+            showQuestion();
+        }
+        
+        function retryQuestion() {
+            const q = currentQuestions[currentIndex];
+            if (!answers[q.id] || answers[q.id].correct) return;
+            
+            // Remove the answer to allow re-selection
+            const wasWrong = !answers[q.id].correct;
+            if (wasWrong) wrongCount--;
+            
+            delete answers[q.id];
+            showQuestion();
+        }
+        
+        function nextQuestion() {
+            if (currentIndex < currentQuestions.length - 1) {
+                currentIndex++;
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+        
+        function prevQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                showQuestion();
+            }
+        }
+        
+        function showResult() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            
+            const total = currentQuestions.length;
+            const percentage = Math.round((correctCount / total) * 100);
+            
+            document.getElementById('final-score').textContent = percentage + '%';
+            document.getElementById('score-detail').textContent = 
+                `共 ${total} 题，答对 ${correctCount} 题，答错 ${wrongCount} 题`;
+            
+            const reviewList = document.getElementById('review-list');
+            reviewList.innerHTML = '';
+            
+            currentQuestions.forEach(q => {
+                if (answers[q.id] && !answers[q.id].correct) {
+                    const item = document.createElement('div');
+                    item.className = 'review-item wrong';
+                    item.innerHTML = `
+                        <div class="review-question">第${q.id}题: ${q.question.substring(0, 50)}...</div>
+                        <div class="review-answer">你的答案: ${answers[q.id].selected} | 正确答案: ${q.answer}</div>
+                        <div class="review-answer" style="margin-top: 5px; color: #333;">${q.explanation ? q.explanation.substring(0, 100) + '...' : ''}</div>
+                    `;
+                    reviewList.appendChild(item);
+                }
+            });
+        }
+        
+        function showReview() {
+            document.getElementById('review-list').classList.toggle('hidden');
+        }
+        
+        function restart() {
+            document.getElementById('start-screen').classList.remove('hidden');
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('review-list').classList.add('hidden');
+        }
+        
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+    </script>
+</body>
+</html>
