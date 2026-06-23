@@ -296,6 +296,174 @@
         }
         .share-buttons { display: flex; gap: 10px; justify-content: center; }
 
+    
+        /* Question List Panel */
+        .question-list-panel {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .question-list-panel.active {
+            display: flex;
+        }
+        .question-list-content {
+            background: white;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .question-list-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .question-list-header h3 {
+            font-size: 1.2rem;
+        }
+        .question-list-close {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .question-list-close:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .question-list-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        .question-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+            gap: 10px;
+        }
+        .question-grid-item {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid #e0e0e0;
+            background: white;
+            color: #333;
+            font-size: 0.9rem;
+        }
+        .question-grid-item:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .question-grid-item.current {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+        .question-grid-item.correct {
+            border-color: #4CAF50;
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .question-grid-item.wrong {
+            border-color: #f44336;
+            background: #ffebee;
+            color: #c62828;
+        }
+        .question-grid-item.bookmarked {
+            border-color: #ff9800;
+            position: relative;
+        }
+        .question-grid-item.bookmarked::after {
+            content: '★';
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            font-size: 0.7rem;
+            color: #ff9800;
+        }
+        .question-list-legend {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            padding: 15px 20px;
+            border-top: 1px solid #eee;
+            font-size: 0.85rem;
+            color: #666;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .legend-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+            border: 2px solid #e0e0e0;
+        }
+        .legend-dot.current { background: #667eea; border-color: #667eea; }
+        .legend-dot.correct { background: #e8f5e9; border-color: #4CAF50; }
+        .legend-dot.wrong { background: #ffebee; border-color: #f44336; }
+        .legend-dot.bookmarked { border-color: #ff9800; }
+        
+        /* Top bar buttons */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .top-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .top-btn.home {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        .top-btn.home:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .top-btn.list {
+            background: #667eea;
+            color: white;
+        }
+        .top-btn.list:hover {
+            background: #5a6fd6;
+        }
+
     </style>
 </head>
 <body>
@@ -303,6 +471,11 @@
         <div class="header">
             <h1>毛概选择题练习</h1>
             <p>共180道单选题，答错可重新选择</p>
+        </div>
+        
+        <div class="top-bar" id="top-bar" style="display: none;">
+            <button class="top-btn home" onclick="goHome()">🏠 返回主页</button>
+            <button class="top-btn list" onclick="showQuestionList()">📋 题目列表</button>
         </div>
         
         
@@ -670,6 +843,68 @@
                 // Clean URL
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
+        }
+
+        
+        // Show/hide top bar based on screen
+        function updateTopBar() {
+            const topBar = document.getElementById('top-bar');
+            const quizScreen = document.getElementById('quiz-screen');
+            if (quizScreen.classList.contains('hidden')) {
+                topBar.style.display = 'none';
+            } else {
+                topBar.style.display = 'flex';
+            }
+        }
+        
+        // Go to home screen
+        function goHome() {
+            if (confirm('返回主页将保存当前答题进度，确定返回吗？')) {
+                document.getElementById('start-screen').classList.remove('hidden');
+                document.getElementById('quiz-screen').classList.add('hidden');
+                document.getElementById('result-screen').classList.add('hidden');
+                document.getElementById('browse-screen').classList.add('hidden');
+                updateTopBar();
+            }
+        }
+        
+        // Show question list panel
+        function showQuestionList() {
+            const panel = document.getElementById('question-list-panel');
+            const grid = document.getElementById('question-grid');
+            
+            loadBookmarks();
+            
+            // Generate grid items
+            grid.innerHTML = currentQuestions.map((q, index) => {
+                let className = 'question-grid-item';
+                
+                if (index === currentIndex) {
+                    className += ' current';
+                } else if (answers[q.id]) {
+                    className += answers[q.id].correct ? ' correct' : ' wrong';
+                }
+                
+                if (bookmarkedQuestions.includes(q.id)) {
+                    className += ' bookmarked';
+                }
+                
+                return `<div class="${className}" onclick="jumpToQuestion(${index})">${index + 1}</div>`;
+            }).join('');
+            
+            panel.classList.add('active');
+        }
+        
+        // Close question list panel
+        function closeQuestionList() {
+            document.getElementById('question-list-panel').classList.remove('active');
+        }
+        
+        // Jump to specific question
+        function jumpToQuestion(index) {
+            currentIndex = index;
+            closeQuestionList();
+            showQuestion();
         }
 
         const questionsData = [
@@ -3064,12 +3299,14 @@
             answers = {};
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('quiz-screen').classList.remove('hidden');
+            updateTopBar();
             document.getElementById('result-screen').classList.add('hidden');
             document.getElementById('total-num').textContent = currentQuestions.length;
             showQuestion();
         }
         
         function showQuestion() {
+            updateTopBar();
             const q = currentQuestions[currentIndex];
             updateBookmarkState();
             const progress = ((currentIndex + 1) / currentQuestions.length) * 100;
@@ -3272,6 +3509,24 @@
             <div class="share-buttons">
                 <button class="btn btn-primary" onclick="copyShareLink()">📋 复制链接</button>
                 <button class="btn btn-secondary" onclick="closeShareModal()">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="question-list-panel" id="question-list-panel">
+        <div class="question-list-content">
+            <div class="question-list-header">
+                <h3>📋 题目列表</h3>
+                <button class="question-list-close" onclick="closeQuestionList()">✕</button>
+            </div>
+            <div class="question-list-body">
+                <div class="question-grid" id="question-grid"></div>
+            </div>
+            <div class="question-list-legend">
+                <div class="legend-item"><div class="legend-dot current"></div> 当前</div>
+                <div class="legend-item"><div class="legend-dot correct"></div> 正确</div>
+                <div class="legend-item"><div class="legend-dot wrong"></div> 错误</div>
+                <div class="legend-item"><div class="legend-dot bookmarked"></div> 收藏</div>
             </div>
         </div>
     </div>
