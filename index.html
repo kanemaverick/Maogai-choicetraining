@@ -465,53 +465,38 @@
         }
 
     
-        /* Sync Panel */
-        .sync-panel {
+        
+
+    
+        /* Simple Sync */
+        .sync-section {
             margin-top: 20px;
             padding: 20px;
-            background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
             border-radius: 12px;
-            border: 1px solid #c8e6c9;
+            border: 1px solid #ffcc80;
         }
-        .sync-panel h3 {
-            color: #2e7d32;
+        .sync-section h3 {
+            color: #e65100;
             margin-bottom: 15px;
             font-size: 1rem;
         }
-        .sync-status {
-            padding: 10px 15px;
-            background: white;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            font-size: 0.9rem;
-            color: #666;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .sync-status.connected { color: #2e7d32; }
-        .sync-status .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #ccc;
-        }
-        .sync-status.connected .status-dot { background: #4CAF50; }
-        .sync-input-group {
+        .sync-code-box {
             display: flex;
             gap: 10px;
             margin-bottom: 10px;
         }
-        .sync-input {
+        .sync-code-input {
             flex: 1;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
+            padding: 12px;
+            border: 2px solid #ffcc80;
             border-radius: 8px;
             font-size: 0.9rem;
+            font-family: monospace;
         }
-        .sync-input:focus {
+        .sync-code-input:focus {
             outline: none;
-            border-color: #4CAF50;
+            border-color: #ff9800;
         }
         .sync-btn {
             padding: 12px 20px;
@@ -521,46 +506,21 @@
             font-size: 0.9rem;
             font-weight: 600;
             transition: all 0.2s;
+            white-space: nowrap;
         }
-        .sync-btn.connect {
-            background: #4CAF50;
-            color: white;
-        }
-        .sync-btn.connect:hover { background: #45a049; }
-        .sync-btn.upload {
-            background: #2196F3;
-            color: white;
-        }
-        .sync-btn.upload:hover { background: #1e88e5; }
-        .sync-btn.download {
-            background: #ff9800;
-            color: white;
-        }
-        .sync-btn.download:hover { background: #f57c00; }
-        .sync-btn.disconnect {
-            background: #f44336;
-            color: white;
-        }
-        .sync-btn.disconnect:hover { background: #e53935; }
-        .sync-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        .sync-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .sync-help {
-            margin-top: 10px;
+        .sync-btn:active { transform: scale(0.95); }
+        .sync-btn.generate { background: #ff9800; color: white; }
+        .sync-btn.generate:hover { background: #f57c00; }
+        .sync-btn.apply { background: #4CAF50; color: white; }
+        .sync-btn.apply:hover { background: #45a049; }
+        .sync-btn.copy { background: #2196F3; color: white; }
+        .sync-btn.copy:hover { background: #1e88e5; }
+        .sync-tip {
             font-size: 0.85rem;
             color: #666;
+            margin-top: 10px;
+            line-height: 1.6;
         }
-        .sync-help a {
-            color: #4CAF50;
-            text-decoration: none;
-        }
-        .sync-help a:hover { text-decoration: underline; }
 
     </style>
 </head>
@@ -607,32 +567,7 @@
                     提示：导出数据可备份您的答题记录、错题和收藏，换设备时可导入恢复。
                 </p>
             </div>
-            <div class="sync-panel">
-                <h3>☁️ 云端同步（GitHub Gist）</h3>
-                <div class="sync-status" id="sync-status">
-                    <div class="status-dot"></div>
-                    <span>未连接</span>
-                </div>
-                <div id="sync-setup">
-                    <div class="sync-input-group">
-                        <input type="password" class="sync-input" id="github-token" placeholder="输入GitHub Personal Access Token">
-                        <button class="sync-btn connect" onclick="connectGithub()">连接</button>
-                    </div>
-                    <div class="sync-help">
-                        <p>📝 获取Token：<a href="https://github.com/settings/tokens/new?scopes=gist&description=Maogai-Sync" target="_blank">点击创建</a>，勾选 <strong>gist</strong> 权限</p>
-                    </div>
-                </div>
-                <div id="sync-actions" style="display: none;">
-                    <div class="sync-buttons">
-                        <button class="sync-btn upload" onclick="uploadToGist()">⬆️ 上传到云端</button>
-                        <button class="sync-btn download" onclick="downloadFromGist()">⬇️ 从云端下载</button>
-                        <button class="sync-btn disconnect" onclick="disconnectGithub()">断开连接</button>
-                    </div>
-                    <div class="sync-help">
-                        <p>上次同步：<span id="last-sync-time">从未</span></p>
-                    </div>
-                </div>
-            </div>
+            
         </div>
         
         <div id="quiz-screen" class="hidden">
@@ -672,9 +607,33 @@
                 <div class="buttons">
                     <button class="btn btn-secondary" id="prev-btn" onclick="prevQuestion()" disabled>上一题</button>
                     <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()">下一题</button>
+                
+            <div class="sync-section">
+                <h3>🔄 跨设备同步</h3>
+                <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">
+                    生成同步码，在另一台设备粘贴即可同步收藏和错题
+                </p>
+                <div style="margin-bottom: 15px;">
+                    <button class="sync-btn generate" onclick="generateSyncCode()" style="width: 100%;">📤 生成同步码</button>
+                </div>
+                <textarea class="sync-code-input" id="sync-code-output" rows="2" placeholder="点击上方按钮生成同步码" readonly></textarea>
+                <div style="margin-top: 10px;">
+                    <button class="sync-btn copy" onclick="copySyncCode()" style="width: 100%;">📋 复制同步码</button>
+                </div>
+                <hr style="margin: 20px 0; border: none; border-top: 1px dashed #ffcc80;">
+                <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">
+                    在另一台设备粘贴同步码导入数据：
+                </p>
+                <textarea class="sync-code-input" id="sync-code-input" rows="2" placeholder="粘贴同步码到这里"></textarea>
+                <div style="margin-top: 10px;">
+                    <button class="sync-btn apply" onclick="applySyncCode()" style="width: 100%;">📥 导入数据</button>
+                </div>
+                <div class="sync-tip">
+                    💡 提示：同步码包含你的收藏和错题数据，可以发给同学或自己保存
                 </div>
             </div>
         </div>
+    </div>
         
         
         <div id="browse-screen" class="hidden">
@@ -687,9 +646,33 @@
                     <button class="btn btn-secondary" onclick="restart()" style="margin-left: auto;">返回</button>
                 </div>
                 <div class="browse-stats" id="browse-stats"></div>
-                <div class="browse-mode" id="browse-container"></div>
+                <div class="browse-mode" id="browse-container">
+            <div class="sync-section">
+                <h3>🔄 跨设备同步</h3>
+                <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">
+                    生成同步码，在另一台设备粘贴即可同步收藏和错题
+                </p>
+                <div style="margin-bottom: 15px;">
+                    <button class="sync-btn generate" onclick="generateSyncCode()" style="width: 100%;">📤 生成同步码</button>
+                </div>
+                <textarea class="sync-code-input" id="sync-code-output" rows="2" placeholder="点击上方按钮生成同步码" readonly></textarea>
+                <div style="margin-top: 10px;">
+                    <button class="sync-btn copy" onclick="copySyncCode()" style="width: 100%;">📋 复制同步码</button>
+                </div>
+                <hr style="margin: 20px 0; border: none; border-top: 1px dashed #ffcc80;">
+                <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">
+                    在另一台设备粘贴同步码导入数据：
+                </p>
+                <textarea class="sync-code-input" id="sync-code-input" rows="2" placeholder="粘贴同步码到这里"></textarea>
+                <div style="margin-top: 10px;">
+                    <button class="sync-btn apply" onclick="applySyncCode()" style="width: 100%;">📥 导入数据</button>
+                </div>
+                <div class="sync-tip">
+                    💡 提示：同步码包含你的收藏和错题数据，可以发给同学或自己保存
+                </div>
             </div>
         </div>
+    </div>
         <div id="result-screen" class="hidden">
             <div class="card result-card">
                 <h2>练习完成！</h2>
@@ -699,9 +682,33 @@
                     <button class="btn btn-secondary" onclick="showReview()">查看错题</button>
                     <button class="btn btn-primary" onclick="restart()">再练一次</button>
                 </div>
-                <div class="review-list hidden" id="review-list"></div>
+                <div class="review-list hidden" id="review-list">
+            <div class="sync-section">
+                <h3>🔄 跨设备同步</h3>
+                <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">
+                    生成同步码，在另一台设备粘贴即可同步收藏和错题
+                </p>
+                <div style="margin-bottom: 15px;">
+                    <button class="sync-btn generate" onclick="generateSyncCode()" style="width: 100%;">📤 生成同步码</button>
+                </div>
+                <textarea class="sync-code-input" id="sync-code-output" rows="2" placeholder="点击上方按钮生成同步码" readonly></textarea>
+                <div style="margin-top: 10px;">
+                    <button class="sync-btn copy" onclick="copySyncCode()" style="width: 100%;">📋 复制同步码</button>
+                </div>
+                <hr style="margin: 20px 0; border: none; border-top: 1px dashed #ffcc80;">
+                <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">
+                    在另一台设备粘贴同步码导入数据：
+                </p>
+                <textarea class="sync-code-input" id="sync-code-input" rows="2" placeholder="粘贴同步码到这里"></textarea>
+                <div style="margin-top: 10px;">
+                    <button class="sync-btn apply" onclick="applySyncCode()" style="width: 100%;">📥 导入数据</button>
+                </div>
+                <div class="sync-tip">
+                    💡 提示：同步码包含你的收藏和错题数据，可以发给同学或自己保存
+                </div>
             </div>
         </div>
+    </div>
     </div>
     
     <script>
@@ -1032,187 +1039,68 @@
         }
 
         
-        // GitHub Gist Sync
-        const GIST_FILENAME = 'maogai-quiz-data.json';
-        const TOKEN_STORAGE_KEY = 'maogai_github_token';
-        const GIST_ID_STORAGE_KEY = 'maogai_gist_id';
         
-        // Check if already connected
-        function checkSyncStatus() {
-            const token = localStorage.getItem(TOKEN_STORAGE_KEY);
-            const gistId = localStorage.getItem(GIST_ID_STORAGE_KEY);
-            const lastSync = localStorage.getItem('maogai_last_sync');
-            
-            if (token && gistId) {
-                document.getElementById('sync-status').className = 'sync-status connected';
-                document.getElementById('sync-status').innerHTML = '<div class="status-dot"></div><span>已连接</span>';
-                document.getElementById('sync-setup').style.display = 'none';
-                document.getElementById('sync-actions').style.display = 'block';
-                if (lastSync) {
-                    document.getElementById('last-sync-time').textContent = lastSync;
-                }
-            }
-        }
+
         
-        // Connect to GitHub
-        async function connectGithub() {
-            const token = document.getElementById('github-token').value.trim();
-            if (!token) {
-                alert('请输入GitHub Token');
-                return;
-            }
-            
-            try {
-                // Test token by getting user info
-                const userResponse = await fetch('https://api.github.com/user', {
-                    headers: { 'Authorization': `token ${token}` }
-                });
-                
-                if (!userResponse.ok) {
-                    alert('Token无效，请检查后重试');
-                    return;
-                }
-                
-                const user = await userResponse.json();
-                
-                // Save token
-                localStorage.setItem(TOKEN_STORAGE_KEY, token);
-                
-                // Try to find existing gist
-                const gistsResponse = await fetch('https://api.github.com/gists', {
-                    headers: { 'Authorization': `token ${token}` }
-                });
-                
-                const gists = await gistsResponse.json();
-                const existingGist = gists.find(g => g.description === 'Maogai-Quiz-Sync-Data');
-                
-                if (existingGist) {
-                    localStorage.setItem(GIST_ID_STORAGE_KEY, existingGist.id);
-                }
-                
-                alert(`已连接到GitHub账号：${user.login}`);
-                checkSyncStatus();
-                
-            } catch (error) {
-                alert('连接失败：' + error.message);
-            }
-        }
-        
-        // Disconnect GitHub
-        function disconnectGithub() {
-            if (confirm('确定断开GitHub连接吗？\n\n本地数据不会删除，但无法再云端同步。')) {
-                localStorage.removeItem(TOKEN_STORAGE_KEY);
-                localStorage.removeItem(GIST_ID_STORAGE_KEY);
-                localStorage.removeItem('maogai_last_sync');
-                
-                document.getElementById('sync-status').className = 'sync-status';
-                document.getElementById('sync-status').innerHTML = '<div class="status-dot"></div><span>未连接</span>';
-                document.getElementById('sync-setup').style.display = 'block';
-                document.getElementById('sync-actions').style.display = 'none';
-            }
-        }
-        
-        // Upload data to Gist
-        async function uploadToGist() {
-            const token = localStorage.getItem(TOKEN_STORAGE_KEY);
-            let gistId = localStorage.getItem(GIST_ID_STORAGE_KEY);
-            
+        // Simple Sync Functions
+        function generateSyncCode() {
             loadBookmarks();
             const savedWrong = localStorage.getItem('maogai_wrong');
             
             const data = {
-                version: '1.0',
-                lastModified: new Date().toISOString(),
-                bookmarks: bookmarkedQuestions,
-                wrongQuestions: savedWrong ? JSON.parse(savedWrong) : []
+                b: bookmarkedQuestions,  // bookmarks
+                w: savedWrong ? JSON.parse(savedWrong) : []  // wrong questions
             };
             
-            const body = {
-                description: 'Maogai-Quiz-Sync-Data',
-                public: false,
-                files: {
-                    [GIST_FILENAME]: {
-                        content: JSON.stringify(data, null, 2)
-                    }
-                }
-            };
+            // Compress and encode
+            const jsonStr = JSON.stringify(data);
+            const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
             
-            try {
-                let response;
-                if (gistId) {
-                    // Update existing gist
-                    response = await fetch(`https://api.github.com/gists/${gistId}`, {
-                        method: 'PATCH',
-                        headers: {
-                            'Authorization': `token ${token}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(body)
-                    });
-                } else {
-                    // Create new gist
-                    response = await fetch('https://api.github.com/gists', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `token ${token}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(body)
-                    });
-                    
-                    const result = await response.json();
-                    gistId = result.id;
-                    localStorage.setItem(GIST_ID_STORAGE_KEY, gistId);
-                }
-                
-                const now = new Date().toLocaleString();
-                localStorage.setItem('maogai_last_sync', now);
-                document.getElementById('last-sync-time').textContent = now;
-                
-                alert('上传成功！\n\n收藏：' + data.bookmarks.length + ' 道\n错题：' + data.wrongQuestions.length + ' 道');
-                
-            } catch (error) {
-                alert('上传失败：' + error.message);
-            }
+            document.getElementById('sync-code-output').value = encoded;
         }
         
-        // Download data from Gist
-        async function downloadFromGist() {
-            const token = localStorage.getItem(TOKEN_STORAGE_KEY);
-            const gistId = localStorage.getItem(GIST_ID_STORAGE_KEY);
-            
-            if (!gistId) {
-                alert('没有找到云端数据');
+        function copySyncCode() {
+            const output = document.getElementById('sync-code-output');
+            if (!output.value) {
+                alert('请先点击"生成同步码"');
+                return;
+            }
+            output.select();
+            document.execCommand('copy');
+            alert('已复制到剪贴板！在另一台设备粘贴即可');
+        }
+        
+        function applySyncCode() {
+            const input = document.getElementById('sync-code-input').value.trim();
+            if (!input) {
+                alert('请先粘贴同步码');
                 return;
             }
             
             try {
-                const response = await fetch(`https://api.github.com/gists/${gistId}`, {
-                    headers: { 'Authorization': `token ${token}` }
-                });
+                const jsonStr = decodeURIComponent(escape(atob(input)));
+                const data = JSON.parse(jsonStr);
                 
-                const gist = await response.json();
-                const fileContent = gist.files[GIST_FILENAME].content;
-                const data = JSON.parse(fileContent);
-                
-                if (confirm(`下载成功！\n\n云端数据：\n- 收藏：${data.bookmarks ? data.bookmarks.length : 0} 道\n- 错题：${data.wrongQuestions ? data.wrongQuestions.length : 0} 道\n- 更新时间：${data.lastModified || '未知'}\n\n确定导入吗？（会覆盖本地数据）`)) {
-                    if (data.bookmarks) {
-                        bookmarkedQuestions = data.bookmarks;
-                        saveBookmarks();
-                    }
-                    if (data.wrongQuestions) {
-                        localStorage.setItem('maogai_wrong', JSON.stringify(data.wrongQuestions));
-                    }
-                    
-                    const now = new Date().toLocaleString();
-                    localStorage.setItem('maogai_last_sync', now);
-                    document.getElementById('last-sync-time').textContent = now;
-                    
-                    alert('导入成功！');
+                if (!data.b && !data.w) {
+                    alert('同步码格式不正确');
+                    return;
                 }
                 
-            } catch (error) {
-                alert('下载失败：' + error.message);
+                const bookmarkCount = data.b ? data.b.length : 0;
+                const wrongCount = data.w ? data.w.length : 0;
+                
+                if (confirm(`确定导入数据吗？\n\n- 收藏题目：${bookmarkCount} 道\n- 错题记录：${wrongCount} 道\n\n（会覆盖本地数据）`)) {
+                    if (data.b) {
+                        bookmarkedQuestions = data.b;
+                        saveBookmarks();
+                    }
+                    if (data.w) {
+                        localStorage.setItem('maogai_wrong', JSON.stringify(data.w));
+                    }
+                    alert('导入成功！');
+                }
+            } catch (e) {
+                alert('同步码无效，请检查后重试');
             }
         }
 
@@ -3562,7 +3450,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadBookmarks();
             loadBookmarksFromUrl();
-            checkSyncStatus();
+            
             questions = questionsData;
             document.querySelectorAll('.mode-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
@@ -3836,9 +3724,33 @@
                 <div class="legend-item"><div class="legend-dot current"></div> 当前</div>
                 <div class="legend-item"><div class="legend-dot correct"></div> 正确</div>
                 <div class="legend-item"><div class="legend-dot wrong"></div> 错误</div>
-                <div class="legend-item"><div class="legend-dot bookmarked"></div> 收藏</div>
+                <div class="legend-item"><div class="legend-dot bookmarked"></div> 收藏
+            <div class="sync-section">
+                <h3>🔄 跨设备同步</h3>
+                <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">
+                    生成同步码，在另一台设备粘贴即可同步收藏和错题
+                </p>
+                <div style="margin-bottom: 15px;">
+                    <button class="sync-btn generate" onclick="generateSyncCode()" style="width: 100%;">📤 生成同步码</button>
+                </div>
+                <textarea class="sync-code-input" id="sync-code-output" rows="2" placeholder="点击上方按钮生成同步码" readonly></textarea>
+                <div style="margin-top: 10px;">
+                    <button class="sync-btn copy" onclick="copySyncCode()" style="width: 100%;">📋 复制同步码</button>
+                </div>
+                <hr style="margin: 20px 0; border: none; border-top: 1px dashed #ffcc80;">
+                <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">
+                    在另一台设备粘贴同步码导入数据：
+                </p>
+                <textarea class="sync-code-input" id="sync-code-input" rows="2" placeholder="粘贴同步码到这里"></textarea>
+                <div style="margin-top: 10px;">
+                    <button class="sync-btn apply" onclick="applySyncCode()" style="width: 100%;">📥 导入数据</button>
+                </div>
+                <div class="sync-tip">
+                    💡 提示：同步码包含你的收藏和错题数据，可以发给同学或自己保存
+                </div>
             </div>
         </div>
+    </div>
     </div>
 </body>
 </html>
